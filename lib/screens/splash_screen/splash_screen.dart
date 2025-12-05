@@ -1,10 +1,12 @@
 import 'dart:async';
 
+import 'package:buy_n_sell/screens/dashboard_screen/dashboard_screen.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 
+import '../../shared_pref/shared_pref.dart';
+import '../connectivity_error_screen/connectivity_error_screen.dart';
 import '../login_signup_screen/login_screen.dart';
-import '../network_error/network_error.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -13,11 +15,14 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
   StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
 
   double _scale = 0.5;
   double _opacity = 0.0;
+  bool _navigated = false;
+  String? email;
 
   @override
   void initState() {
@@ -30,26 +35,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       });
     });
 
-    _connectivitySubscription = Connectivity().onConnectivityChanged.listen((
-        List<ConnectivityResult> result,
-        ) {
-      Timer(
-        Duration(seconds: 2),
-            () {
-          if (result.contains(ConnectivityResult.mobile) || result.contains(ConnectivityResult.wifi)) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => LoginScreen()),
-            );
-          } else if (result.contains(ConnectivityResult.none)) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => NetworkError()),
-            );
-          }
-        },
-      );
-    });
+    Future.delayed(const Duration(seconds: 2), _checkConnectivity);
   }
 
   @override
@@ -75,5 +61,45 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         ),
       ),
     );
+  }
+
+  void _checkConnectivity() {
+    _connectivitySubscription = Connectivity().onConnectivityChanged.listen((
+      List<ConnectivityResult> result,
+    ) async {
+      if (_navigated) return; // prevent double navigation
+
+      if (result.contains(ConnectivityResult.mobile) ||
+          result.contains(ConnectivityResult.wifi)) {
+        bool isLoggedIn = await SharedPref.getLoginStatus();
+        email = await SharedPref.getUserEmail();
+        print("shared pref user email $email");
+
+        setState(() {
+          _navigated = true;
+        });
+
+        if (isLoggedIn) {
+          print("shared pref: email $email");
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => DashboardScreen()),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginScreen()),
+          );
+        }
+      } else {
+        setState(() {
+          _navigated = true;
+        });
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => ConnectivityErrorScreen()),
+        );
+      }
+    });
   }
 }

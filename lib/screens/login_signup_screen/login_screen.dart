@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 
 import '../../custom_widgets/my_colors/my_colors.dart';
 import '../../model_class/login_model.dart';
+import '../../shared_pref/shared_pref.dart';
 import '../dashboard_screen/dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -260,6 +261,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
       print("User ID: ${loginModel.user?.id}");
       print("User Name: ${loginModel.user?.name}");
+
+      var email = emailController.text.toString();
+      await SharedPref.saveLoginStatus(true);
+      await SharedPref.saveUserEmail(email);
+
+      print("Saved User email: $email");
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => DashboardScreen()),
