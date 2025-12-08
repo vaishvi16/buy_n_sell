@@ -5,6 +5,7 @@ import 'package:buy_n_sell/custom_widgets/custom_fields/custom_textfields.dart';
 import 'package:buy_n_sell/screens/login_signup_screen/forgot_password_screen.dart';
 import 'package:buy_n_sell/screens/login_signup_screen/signup_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 
 import '../../custom_widgets/my_colors/my_colors.dart';
@@ -31,6 +32,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final RegExp passwordValidatorRegExp = RegExp(
     r"^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{6,16}$",
   );
+
+  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email']);
 
   @override
   Widget build(BuildContext context) {
@@ -207,11 +210,17 @@ class _LoginScreenState extends State<LoginScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              socialIcon("assets/icons/instagram.png"),
+                              socialIcon(
+                                "assets/icons/instagram.png",
+                                "instagram",
+                              ),
                               SizedBox(width: 15),
-                              socialIcon("assets/icons/facebook.png"),
+                              socialIcon(
+                                "assets/icons/facebook.png",
+                                "facebook",
+                              ),
                               SizedBox(width: 15),
-                              socialIcon("assets/icons/google.png"),
+                              socialIcon("assets/icons/google.png", "google"),
                             ],
                           ),
                         ],
@@ -227,9 +236,11 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget socialIcon(String path) {
+  Widget socialIcon(String path, String provider) {
     return GestureDetector(
-      onTap: () {},
+      onTap: () {
+      //  _handleLogin(provider);
+      },
       child: CircleAvatar(
         radius: 21,
         backgroundColor: Colors.white,
@@ -277,5 +288,57 @@ class _LoginScreenState extends State<LoginScreen> {
         context,
       ).showSnackBar(SnackBar(content: Text("Login Failed!")));
     }
+  }
+
+  Future<void> _handleLogin(String provider) async {
+    switch (provider) {
+      case "google":
+        await _handleGoogleSignIn();
+
+      case "facebook":
+        await _handleFacebookSignIn();
+
+      case "instagram":
+        await _handleInstagramSignIn();
+    }
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    try {
+      GoogleSignInAccount? googleaccount = await _googleSignIn.signIn();
+      if (googleaccount != null) {
+        GoogleSignInAuthentication googleSignInAuthentication =
+            await googleaccount.authentication;
+
+        final accessToken = googleSignInAuthentication.accessToken;
+        final idToken = googleSignInAuthentication.idToken;
+
+        print("$accessToken");
+        print("$idToken");
+
+        if (accessToken != null) {
+          print("Name is :" + googleaccount.displayName.toString());
+          print("Email is :" + googleaccount.email.toString());
+          print("Photo is :" + googleaccount.photoUrl.toString());
+        }
+      }
+    } catch (e) {
+      print("MY ERROR : $e");
+    }
+  }
+
+  Future<void> _handleFacebookSignIn() async {
+    print("Facebook login clicked");
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text("Login through facebook is out of service, try another way!")));
+
+  }
+
+  Future<void> _handleInstagramSignIn() async {
+    print("Instagram login clicked");
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text("Login through instagram is out of service, try another way!")));
   }
 }

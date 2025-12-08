@@ -1,0 +1,105 @@
+{
+  "project_info": {
+    "project_number": "142233282132",
+    "project_id": "phone-number-verificatio-9d556",
+    "storage_bucket": "phone-number-verificatio-9d556.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:142233282132:android:cbfb825032838ecc76afc1",
+        "android_client_info": {
+          "package_name": "com.example.buy_n_sell"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "142233282132-u92uckbbku3pk844fauum61kn91s6sjh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvs5XPMgHhh6WrZyn7qamkgjf34Fj0MJk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "142233282132-u92uckbbku3pk844fauum61kn91s6sjh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:142233282132:android:b21544374b62ea5176afc1",
+        "android_client_info": {
+          "package_name": "com.example.flutter_projects"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "142233282132-u4crqckc273e2uh1fo162b23a3hmlvr0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.flutter_projects",
+            "certificate_hash": "87d8d9877e07b2ed26f5a9fdff5eff19e55960f6"
+          }
+        },
+        {
+          "client_id": "142233282132-u92uckbbku3pk844fauum61kn91s6sjh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvs5XPMgHhh6WrZyn7qamkgjf34Fj0MJk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "142233282132-u92uckbbku3pk844fauum61kn91s6sjh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:142233282132:android:049cd877241be3ca76afc1",
+        "android_client_info": {
+          "package_name": "com.example.paramount_ui_design"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "142233282132-u92uckbbku3pk844fauum61kn91s6sjh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvs5XPMgHhh6WrZyn7qamkgjf34Fj0MJk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "142233282132-u92uckbbku3pk844fauum61kn91s6sjh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
