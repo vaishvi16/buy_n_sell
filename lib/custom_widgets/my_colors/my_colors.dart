@@ -9,6 +9,8 @@ class MyColors
   static final whiteLightColor = Colors.white60;
   static final blackColor = Colors.black;
   static final blackDarkColor = Colors.black87;
+  static final greyColor = Colors.grey.shade500;
+
 /* static const orangeTile = Color(0xffffe1bb);
   static const orangeDivider = Color(0xffffc77e);
   static const contactDivider = Color(0xff89cdbb);
