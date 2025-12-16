@@ -6,8 +6,9 @@ import '../product_section/product_detail_screen.dart';
 
 class ProductSearches extends StatefulWidget {
   final String searchQuery;
+  final bool isSubmitted;
 
-  const ProductSearches({super.key, this.searchQuery = " "});
+  const ProductSearches({super.key, this.searchQuery = " ",  required this.isSubmitted});
 
   @override
   State<ProductSearches> createState() => _ProductSearchesState();
@@ -37,6 +38,20 @@ class _ProductSearchesState extends State<ProductSearches> {
       final query = widget.searchQuery.toLowerCase();
       return name.contains(query);
     }).toList();
+
+    // SHOW MESSAGE ONLY AFTER SUBMIT
+    if (widget.isSubmitted && filteredProducts.isEmpty) {
+      return Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Text(
+          "No products found",
+          style: TextStyle(
+            fontSize: 16,
+            color: MyColors.greyColor,
+          ),
+        ),
+      );
+    }
 
     return GridView.builder(
       shrinkWrap: true,

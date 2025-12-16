@@ -14,6 +14,7 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
+  bool isSubmitted = false;
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +27,15 @@ class _SearchScreenState extends State<SearchScreen> {
         autoFocus: true,
         controller: _searchController,
         onChanged: (value) {
-          setState(() {});
+          setState(() {
+            isSubmitted = false;
+          });
+        },
+        onSubmitted: (value) {
+          print("onsubmitted clicked");
+          setState(() {
+            isSubmitted = true;
+          });
         },
       ),
       body: SingleChildScrollView(
@@ -54,7 +63,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 ),
               ],
             ),
-            ProductSearches(searchQuery: _searchController.text),
+            ProductSearches(searchQuery: _searchController.text, isSubmitted: isSubmitted,),
           ],
         ),
       ),

@@ -7,6 +7,7 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
   TextEditingController controller;
   final Widget? navigate;
   final ValueChanged<String>? onChanged;
+  final ValueChanged<String>? onSubmitted;
 
   MyAppBar({
     required this.readOnly,
@@ -15,6 +16,7 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
     required this.controller,
     this.navigate,
     this.onChanged,
+    this.onSubmitted
   });
 
   @override
@@ -40,6 +42,7 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
                   top: screenHeight * 0.01,
                 ),
                 child: TextField(
+                  onSubmitted: onSubmitted,
                   readOnly: readOnly,
                   autofocus: autoFocus,
                   maxLines: 1,
