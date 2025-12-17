@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:buy_n_sell/screens/dashboard_screen/dashboard_screen.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../providers/auth_provider.dart';
 import '../../shared_pref/shared_pref.dart';
 import '../connectivity_error_screen/connectivity_error_screen.dart';
 import '../login_signup_screen/login_screen.dart';
@@ -28,15 +30,18 @@ class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    // Animate splash logo
+    Future.delayed(Duration.zero, () {
       setState(() {
         _scale = 1.0;
         _opacity = 1.0;
       });
     });
 
+    // Check connectivity after 2 seconds
     Future.delayed(const Duration(seconds: 2), _checkConnectivity);
-  }
+
+    }
 
   @override
   void dispose() {
@@ -67,39 +72,31 @@ class _SplashScreenState extends State<SplashScreen>
     _connectivitySubscription = Connectivity().onConnectivityChanged.listen((
       List<ConnectivityResult> result,
     ) async {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
       if (_navigated) return; // prevent double navigation
 
-      if (result.contains(ConnectivityResult.mobile) ||
-          result.contains(ConnectivityResult.wifi)) {
-        bool isLoggedIn = await SharedPref.getLoginStatus();
-        email = await SharedPref.getUserEmail();
-        print("shared pref user email $email");
+          if (result.contains(ConnectivityResult.mobile) ||
+              result.contains(ConnectivityResult.wifi)) {
+            // Check login status through provider
+            await authProvider.checkLoginStatus();
 
-        setState(() {
-          _navigated = true;
+            if (authProvider.isLoggedIn) {
+              _navigateTo( DashboardScreen());
+            } else {
+              _navigateTo( LoginScreen());
+            }
+          } else {
+            // No internet
+            _navigateTo( ConnectivityErrorScreen());
+          }
         });
-
-        if (isLoggedIn) {
-          print("shared pref: email $email");
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => DashboardScreen()),
-          );
-        } else {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const LoginScreen()),
-          );
-        }
-      } else {
-        setState(() {
-          _navigated = true;
-        });
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => ConnectivityErrorScreen()),
-        );
-      }
-    });
   }
-}
+
+  void _navigateTo(Widget screen) {
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => screen),
+    );
+  }}

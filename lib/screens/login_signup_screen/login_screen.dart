@@ -7,9 +7,11 @@ import 'package:buy_n_sell/screens/login_signup_screen/signup_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 
 import '../../custom_widgets/my_colors/my_colors.dart';
 import '../../model_class/login_model.dart';
+import '../../providers/auth_provider.dart';
 import '../../shared_pref/shared_pref.dart';
 import '../dashboard_screen/dashboard_screen.dart';
 
@@ -142,11 +144,21 @@ class _LoginScreenState extends State<LoginScreen> {
                                 MyColors.whiteLightColor,
                               ),
                             ),
-                            onPressed: () {
+                            onPressed: () async {
                               if (_formKey.currentState!.validate()) {
-                                loginUser();
-                              } else {
-                                print("Login failed!");
+                                final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                                await authProvider.loginUser(emailController.text, pswdController.text);
+
+                                if (authProvider.isLoggedIn) {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(builder: (_) => DashboardScreen()),
+                                  );
+                                } else if (authProvider.errorMessage != null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(authProvider.errorMessage!)),
+                                  );
+                                }
                               }
                             },
                             child: Text(
@@ -250,95 +262,5 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
-  }
-
-  void loginUser() async {
-    var url = Uri.parse(ApiUrl.login);
-
-    var response = await http.post(
-      url,
-      body: {
-        "mail": emailController.text.toString(),
-        "password": pswdController.text.toString(),
-      },
-    );
-
-    final jsonData = jsonDecode(response.body);
-
-    LoginModel loginModel = LoginModel.fromJson(jsonData);
-
-    if (loginModel.status == "success") {
-      print("Login success!!!! ${response.body}");
-
-      print("User ID: ${loginModel.user?.id}");
-      print("User Name: ${loginModel.user?.name}");
-
-      var email = emailController.text.toString();
-      await SharedPref.saveLoginStatus(true);
-      await SharedPref.saveUserEmail(email);
-
-      print("Saved User email: $email");
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => DashboardScreen()),
-      );
-    } else {
-      print("Login failed! ${loginModel.status} and ${loginModel.message}");
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Login Failed!")));
-    }
-  }
-
-  Future<void> _handleLogin(String provider) async {
-    switch (provider) {
-      case "google":
-        await _handleGoogleSignIn();
-
-      case "facebook":
-        await _handleFacebookSignIn();
-
-      case "instagram":
-        await _handleInstagramSignIn();
-    }
-  }
-
-  Future<void> _handleGoogleSignIn() async {
-    try {
-      GoogleSignInAccount? googleaccount = await _googleSignIn.signIn();
-      if (googleaccount != null) {
-        GoogleSignInAuthentication googleSignInAuthentication =
-            await googleaccount.authentication;
-
-        final accessToken = googleSignInAuthentication.accessToken;
-        final idToken = googleSignInAuthentication.idToken;
-
-        print("$accessToken");
-        print("$idToken");
-
-        if (accessToken != null) {
-          print("Name is :" + googleaccount.displayName.toString());
-          print("Email is :" + googleaccount.email.toString());
-          print("Photo is :" + googleaccount.photoUrl.toString());
-        }
-      }
-    } catch (e) {
-      print("MY ERROR : $e");
-    }
-  }
-
-  Future<void> _handleFacebookSignIn() async {
-    print("Facebook login clicked");
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text("Login through facebook is out of service, try another way!")));
-
-  }
-
-  Future<void> _handleInstagramSignIn() async {
-    print("Instagram login clicked");
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text("Login through instagram is out of service, try another way!")));
   }
 }

@@ -1,3 +1,4 @@
+import 'package:buy_n_sell/providers/auth_provider.dart';
 import 'package:buy_n_sell/providers/dashboard_provider.dart';
 import 'package:buy_n_sell/screens/dashboard_screen/dashboard_screen.dart';
 import 'package:buy_n_sell/screens/splash_screen/splash_screen.dart';
@@ -12,6 +13,8 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => DashboardProvider()),
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+
       ],
       child: MaterialApp(
         home: SplashScreen(),
