@@ -1,41 +1,24 @@
 import 'package:buy_n_sell/custom_widgets/my_colors/my_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../providers/dashboard_provider.dart';
 import '../bottom_navigation_screen/add_to_cart_screen.dart';
 import '../bottom_navigation_screen/home_screen.dart';
 import '../bottom_navigation_screen/profile_screen.dart';
 import '../bottom_navigation_screen/wishlist_screen.dart';
 
-class DashboardScreen extends StatefulWidget {
+class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
   @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
-}
-
-class _DashboardScreenState extends State<DashboardScreen> {
-  int _selectedIndex = 0;
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-      print(_selectedIndex);
-    });
-  }
-
-  static final List<Widget> _widgetOptions = <Widget>[
-    HomeScreen(),
-    WishlistScreen(),
-    AddToCartScreen(),
-    ProfileScreen(),
-  ];
-
-  @override
   Widget build(BuildContext context) {
+    final dashboardProvider = context.watch<DashboardProvider>();
+
     return Scaffold(
       extendBody: true,
       backgroundColor: MyColors.primaryColor,
-      body: _widgetOptions.elementAt(_selectedIndex),
+      body: dashboardProvider.currentScreen,
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.all(Radius.circular(20)),
@@ -79,11 +62,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 //title: Text('Download'),
               ),
             ],
-            currentIndex: _selectedIndex,
+            currentIndex: dashboardProvider.selectedIndex,
             backgroundColor: Colors.transparent,
             selectedItemColor: MyColors.blackDarkColor,
             unselectedItemColor: MyColors.whiteLightColor,
-            onTap: _onItemTapped,
+            onTap: dashboardProvider.onItemTapped,
             showSelectedLabels: false,
             showUnselectedLabels: false,
           ),
