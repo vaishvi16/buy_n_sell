@@ -1,7 +1,9 @@
 import 'package:buy_n_sell/custom_widgets/my_appbar/my_appbar.dart';
 import 'package:buy_n_sell/custom_widgets/my_colors/my_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../providers/category_provider.dart';
 import '../category_section/category_section.dart';
 import '../search_screen/search_screen.dart';
 
@@ -14,6 +16,14 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<CategoryProvider>(context, listen: false).fetchCategories();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

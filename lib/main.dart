@@ -1,4 +1,5 @@
 import 'package:buy_n_sell/providers/auth_provider.dart';
+import 'package:buy_n_sell/providers/category_provider.dart';
 import 'package:buy_n_sell/providers/dashboard_provider.dart';
 import 'package:buy_n_sell/screens/dashboard_screen/dashboard_screen.dart';
 import 'package:buy_n_sell/screens/splash_screen/splash_screen.dart';
@@ -14,6 +15,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => DashboardProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => CategoryProvider()),
 
       ],
       child: MaterialApp(
