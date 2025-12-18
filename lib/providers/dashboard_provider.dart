@@ -25,4 +25,9 @@ class DashboardProvider extends ChangeNotifier {
     notifyListeners(); // will notify the screen
   }
 
+  void resetIndex() {
+    _selectedIndex = 0;
+    notifyListeners();
+  } // to reset index when user logs out
+
 }

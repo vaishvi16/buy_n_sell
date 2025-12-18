@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 
 import '../api_urls/api_urls.dart';
 import '../model_class/login_model.dart';
+import '../model_class/signup_model.dart';
 import '../shared_pref/shared_pref.dart';
 
 class AuthProvider extends ChangeNotifier {
@@ -13,6 +14,8 @@ class AuthProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _userEmail;
   String? _errorMessage;
+  bool _isSigningUp = false;
+  String? _signupMessage;
 
   // Getters
   bool get isLoggedIn => _isLoggedIn;
@@ -22,6 +25,10 @@ class AuthProvider extends ChangeNotifier {
   String? get userEmail => _userEmail;
 
   String? get errorMessage => _errorMessage;
+
+  bool get isSigningUp => _isSigningUp;
+
+  String? get signupMessage => _signupMessage;
 
   final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email']);
 
@@ -72,7 +79,7 @@ class AuthProvider extends ChangeNotifier {
       }
     } catch (e) {
       _isLoggedIn = false;
-      _errorMessage = "Something went wrong. Try again!";
+      _errorMessage = "Something went wrong. Try again! $e";
     }
     _isLoading = false;
     notifyListeners();
@@ -133,5 +140,51 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> instagramLogin() async {
     print("Instagram login clicked");
+  }
+
+  void clearError() {
+    _errorMessage = null;
+    notifyListeners();
+  }
+
+  Future<bool> signUpUser(String name, String email, String password) async {
+    _isSigningUp = true;
+    _signupMessage = null;
+    notifyListeners();
+
+    try{
+      var url = Uri.parse(ApiUrl.signUp);
+
+      var response = await http.post(
+        url,
+        body: {
+          'name': name,
+          'mail': email,
+          'password': password,
+        },
+      );
+
+      var jsonData = jsonDecode(response.body);
+
+      SignupModel smodel = SignupModel.fromJson(jsonData);
+
+      if (smodel.status == 'success') {
+        print("uSer sign up success!");
+        _signupMessage = "Signup successful. Please login.";
+        _isSigningUp = false;
+        notifyListeners();
+        return true;
+      } else {
+        print("USer sign up failed! ${smodel.status} and ${smodel.message}");
+        _signupMessage = "Signup failed";
+
+      }
+    }catch(e){
+      _signupMessage = "Something went wrong. Try again.";
+
+    }
+    _isSigningUp = false;
+    notifyListeners();
+    return false;
   }
 }

@@ -1,13 +1,10 @@
-import 'dart:convert';
-
-import 'package:buy_n_sell/api_urls/api_urls.dart';
-import 'package:buy_n_sell/model_class/signup_model.dart';
 import 'package:buy_n_sell/screens/login_signup_screen/login_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 
 import '../../custom_widgets/custom_fields/custom_textfields.dart';
 import '../../custom_widgets/my_colors/my_colors.dart';
+import '../../providers/auth_provider.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -38,6 +35,7 @@ class _SignupScreenState extends State<SignupScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: Container(
         width: screenWidth,
         height: screenHeight,
@@ -63,167 +61,192 @@ class _SignupScreenState extends State<SignupScreen> {
               ),
 
               Expanded(
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: screenWidth * 0.08,
-                    ),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          CustomTextField(
-                            controller: nameController,
-                            labelText: "Name",
-                            hintText: "Enter your name",
-                            validator: (value) =>
-                                value!.isEmpty ? "Enter name" : null,
-                            keyboardType: TextInputType.name,
-                            maxLine: 1,
-                          ),
-                          SizedBox(height: screenHeight * 0.015),
-                          CustomTextField(
-                            keyboardType: TextInputType.emailAddress,
-                            controller: emailController,
-                            labelText: "Email",
-                            hintText: "Enter email",
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter your email';
-                              }
-                              if (!emailValidatorRegExp.hasMatch(value)) {
-                                return 'Please enter a valid email address';
-                              }
-                              return null;
-                            },
-                          ),
-                          SizedBox(height: screenHeight * 0.015),
-                          CustomTextField(
-                            controller: pswdController,
-                            labelText: "Password",
-                            hintText: "Enter password",
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter your password';
-                              }
-                              if (!passwordValidatorRegExp.hasMatch(value)) {
-                                return 'Password must be atleast 6 characters, include uppercase, lowercase, number, and special character.';
-                              }
-                              return null;
-                            },
-
-                            keyboardType: TextInputType.text,
-                            obsureText: !showPassword,
-                            sufFixIcon: IconButton(
-                              icon: Icon(
-                                showPassword
-                                    ? Icons.visibility_outlined
-                                    : Icons.visibility_off_outlined,
-                                color: MyColors.blackColor,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  showPassword = !showPassword;
-                                });
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom,),
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: screenWidth * 0.08,
+                        vertical: screenWidth * 0.02
+                      ),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CustomTextField(
+                              controller: nameController,
+                              labelText: "Name",
+                              hintText: "Enter your name",
+                              validator: (value) =>
+                                  value!.isEmpty ? "Enter name" : null,
+                              keyboardType: TextInputType.name,
+                              maxLine: 1,
+                            ),
+                            SizedBox(height: screenHeight * 0.015),
+                            CustomTextField(
+                              keyboardType: TextInputType.emailAddress,
+                              controller: emailController,
+                              labelText: "Email",
+                              hintText: "Enter email",
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter your email';
+                                }
+                                if (!emailValidatorRegExp.hasMatch(value)) {
+                                  return 'Please enter a valid email address';
+                                }
+                                return null;
                               },
                             ),
-                            maxLine: 1,
-                          ),
-                          SizedBox(height: screenHeight * 0.015),
-                          CustomTextField(
-                            controller: cPswdController,
-                            labelText: "Confirm Password",
-                            hintText: "Enter confirm password",
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter confirm password';
-                              }
-                              var pswdValue = pswdController.text.toString();
-                              var cPswdValue = cPswdController.text.toString();
-
-                              if (pswdValue != cPswdValue) {
-                                return 'Password and Confirm Password must match! ';
-                              }
-                              return null;
-                            },
-                            keyboardType: TextInputType.text,
-                            obsureText: !showCPassword,
-                            sufFixIcon: IconButton(
-                              onPressed: () {
-                                setState(() {
-                                  showCPassword = !showCPassword;
-                                });
+                            SizedBox(height: screenHeight * 0.015),
+                            CustomTextField(
+                              controller: pswdController,
+                              labelText: "Password",
+                              hintText: "Enter password",
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter your password';
+                                }
+                                if (!passwordValidatorRegExp.hasMatch(value)) {
+                                  return 'Password must be atleast 6 characters, include uppercase, lowercase, number, and special character.';
+                                }
+                                return null;
                               },
-                              icon: Icon(
-                                showCPassword
-                                    ? Icons.visibility_outlined
-                                    : Icons.visibility_off_outlined,
-                              ),
-                            ),
-                            maxLine: 1,
-                          ),
-                          SizedBox(height: screenHeight * 0.045),
 
-                          // SIGN UP BUTTON
-                          ElevatedButton(
-                            style: ButtonStyle(
-                              shape: WidgetStatePropertyAll(
-                                RoundedRectangleBorder(
-                                  borderRadius: BorderRadiusGeometry.all(
-                                    Radius.circular(8),
+                              keyboardType: TextInputType.text,
+                              obsureText: !showPassword,
+                              sufFixIcon: IconButton(
+                                icon: Icon(
+                                  showPassword
+                                      ? Icons.visibility_outlined
+                                      : Icons.visibility_off_outlined,
+                                  color: MyColors.blackColor,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    showPassword = !showPassword;
+                                  });
+                                },
+                              ),
+                              maxLine: 1,
+                            ),
+                            SizedBox(height: screenHeight * 0.015),
+                            CustomTextField(
+                              controller: cPswdController,
+                              labelText: "Confirm Password",
+                              hintText: "Enter confirm password",
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter confirm password';
+                                }
+                                var pswdValue = pswdController.text.toString();
+                                var cPswdValue = cPswdController.text.toString();
+
+                                if (pswdValue != cPswdValue) {
+                                  return 'Password and Confirm Password must match! ';
+                                }
+                                return null;
+                              },
+                              keyboardType: TextInputType.text,
+                              obsureText: !showCPassword,
+                              sufFixIcon: IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    showCPassword = !showCPassword;
+                                  });
+                                },
+                                icon: Icon(
+                                  showCPassword
+                                      ? Icons.visibility_outlined
+                                      : Icons.visibility_off_outlined,
+                                ),
+                              ),
+                              maxLine: 1,
+                            ),
+                            SizedBox(height: screenHeight * 0.045),
+
+                            // SIGN UP BUTTON
+                            ElevatedButton(
+                              style: ButtonStyle(
+                                shape: WidgetStatePropertyAll(
+                                  RoundedRectangleBorder(
+                                    borderRadius: BorderRadiusGeometry.all(
+                                      Radius.circular(8),
+                                    ),
                                   ),
                                 ),
+                                minimumSize: WidgetStatePropertyAll(
+                                  Size(screenWidth * 0.6, 45),
+                                ),
+                                backgroundColor: WidgetStatePropertyAll(
+                                  MyColors.whiteLightColor,
+                                ),
                               ),
-                              minimumSize: WidgetStatePropertyAll(
-                                Size(screenWidth * 0.6, 45),
-                              ),
-                              backgroundColor: WidgetStatePropertyAll(
-                                MyColors.whiteLightColor,
+                              onPressed: () async {
+                                if (_formKey.currentState!.validate()) {
+                                  final authProvider = Provider.of<AuthProvider>(
+                                    context,
+                                    listen: false,
+                                  );
+
+                                  final success = await authProvider.signUpUser(
+                                    nameController.text.toString(),
+                                    emailController.text.toString(),
+                                    pswdController.text.toString(),
+                                  );
+
+                                  if (success) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text(authProvider.signupMessage!)),
+                                    );
+
+                                    Navigator.pop(context); // go back to login
+                                  } else if (authProvider.signupMessage != null) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text(authProvider.signupMessage!)),
+                                    );
+                                  }
+                                }
+                              },
+                              child: Text(
+                                "Sign Up",
+                                style: TextStyle(
+                                  color: MyColors.primaryColor,
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
                             ),
-                            onPressed: () {
-                              if (_formKey.currentState!.validate()) {
-                                signUpUser();
-                              }
-                            },
-                            child: Text(
-                              "Sign Up",
-                              style: TextStyle(
-                                color: MyColors.primaryColor,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
 
-                          SizedBox(height: screenHeight * 0.015),
+                            SizedBox(height: screenHeight * 0.015),
 
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => LoginScreen(),
-                                ),
-                              );
-                            },
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'Already have an account? ',
-                                  style: TextStyle(color: MyColors.blackColor),
-                                ),
-                                Text(
-                                  ' Login',
-                                  style: TextStyle(
-                                    color: MyColors.whiteLightColor,
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => LoginScreen(),
                                   ),
-                                ),
-                              ],
+                                );
+                              },
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'Already have an account? ',
+                                    style: TextStyle(color: MyColors.blackColor),
+                                  ),
+                                  Text(
+                                    ' Login',
+                                    style: TextStyle(
+                                      color: MyColors.whiteLightColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -234,32 +257,5 @@ class _SignupScreenState extends State<SignupScreen> {
         ),
       ),
     );
-  }
-
-  void signUpUser() async {
-    var url = Uri.parse(ApiUrl.signUp);
-
-    var response = await http.post(
-      url,
-      body: {
-        'name': nameController.text.toString(),
-        'mail': emailController.text.toString(),
-        'password': pswdController.text.toString(),
-      },
-    );
-
-    var jsonData = jsonDecode(response.body);
-
-    SignupModel smodel = SignupModel.fromJson(jsonData);
-
-    if (smodel.status == 'success') {
-      print("uSer sign up success!");
-      Navigator.pop(context, LoginScreen());
-    } else {
-      print("USer sign up failed! ${smodel.status} and ${smodel.message}");
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Sign Up failed!")));
-    }
   }
 }
