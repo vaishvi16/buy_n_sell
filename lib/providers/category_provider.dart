@@ -14,6 +14,11 @@ class CategoryProvider extends ChangeNotifier {
   String? get error => _error;
 
   Future<void> fetchCategories() async {
+
+    if (_categories.isNotEmpty) {
+      return;
+    }
+
     _isLoading = true;
     _error = null;
     notifyListeners();

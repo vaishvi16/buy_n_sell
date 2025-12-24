@@ -33,4 +33,28 @@ class ProductApi{
     }
   }
 
+  Future<void> loadProductsAsCategory(String? categoryId) async{
+    var url = Uri.parse("${ApiUrl.viewProducts}?cat_id=$categoryId");
+
+    var response = await http.get(url);
+
+    if(response.statusCode == 200){
+      print(response.body);
+
+      var jsonData = jsonDecode(response.body);
+
+      products.clear();
+
+      for (var item in jsonData) {
+        products.add(ProductModel.fromJson(item));
+      }
+
+      for (var p in products) {
+        print("Product Name: ${p.name}");
+
+      }
+
+    }
+  }
+
 }

@@ -1,6 +1,8 @@
 import 'package:buy_n_sell/providers/auth_provider.dart';
+import 'package:buy_n_sell/providers/category_product_provider.dart';
 import 'package:buy_n_sell/providers/category_provider.dart';
 import 'package:buy_n_sell/providers/dashboard_provider.dart';
+import 'package:buy_n_sell/providers/product_provider.dart';
 import 'package:buy_n_sell/screens/dashboard_screen/dashboard_screen.dart';
 import 'package:buy_n_sell/screens/splash_screen/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -16,6 +18,9 @@ void main() async {
         ChangeNotifierProvider(create: (_) => DashboardProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
+        ChangeNotifierProvider(create: (_) => ProductProvider()),
+        ChangeNotifierProvider(create: (_) => CategoryProductProvider()),
+
 
       ],
       child: MaterialApp(

@@ -1,8 +1,9 @@
 import 'package:buy_n_sell/custom_widgets/custom_fields/custom_category_gridview.dart';
+import 'package:buy_n_sell/custom_widgets/my_appbar/primary_appbar.dart';
+import 'package:buy_n_sell/screens/product_section/all_product_as_category.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../custom_widgets/my_colors/my_colors.dart';
 import '../../providers/category_provider.dart';
 
 class AllCategorySection extends StatelessWidget {
@@ -10,7 +11,6 @@ class AllCategorySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return Consumer<CategoryProvider>(
       builder: (context, provider, child) {
         if (provider.isLoading) {
@@ -26,34 +26,9 @@ class AllCategorySection extends StatelessWidget {
         }
 
         return Scaffold(
-          appBar: AppBar(
-            elevation: 2,
-            backgroundColor: MyColors.primaryColor,
-            leading: IconButton(
-              icon:  Icon(Icons.arrow_back_ios, size: 22,),
-              color: MyColors.blackColor,
-              onPressed: () => Navigator.pop(context),
-            ),
-            title: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Categories",
-                  style: TextStyle(
-                    color: MyColors.whiteColor,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                Text(
-                  "Browse all available categories",
-                  style: TextStyle(
-                    color: MyColors.whiteLightColor,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
+          appBar: primaryAppBar(
+            title: "Categories",
+            subtitle: "Browse all available categories",
           ),
 
           body: Column(

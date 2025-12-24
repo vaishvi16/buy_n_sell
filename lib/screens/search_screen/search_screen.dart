@@ -1,9 +1,12 @@
 import 'package:buy_n_sell/custom_widgets/my_appbar/my_appbar.dart';
+import 'package:buy_n_sell/providers/product_provider.dart';
 import 'package:buy_n_sell/screens/search_screen/category_searches.dart';
 import 'package:buy_n_sell/screens/search_screen/product_searches.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../custom_widgets/my_colors/my_colors.dart';
+import '../../providers/category_provider.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -17,10 +20,17 @@ class _SearchScreenState extends State<SearchScreen> {
   bool isSubmitted = false;
 
   @override
-  Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<CategoryProvider>(context, listen: false).fetchCategories();
+      Provider.of<ProductProvider>(context, listen: false).fetchProducts(forceRefresh: true);
+    });
+  }
 
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: MyAppBar(
         readOnly: false,
