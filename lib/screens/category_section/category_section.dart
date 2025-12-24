@@ -25,66 +25,61 @@ class CategorySection extends StatelessWidget {
           return const Center(child: Text("No categories found"));
         }
 
-        return SafeArea(
-          bottom: true,
-          child: Column(
-            children: [
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        "Categories",
-                        style: TextStyle(
-                          color: MyColors.blackColor,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
+        return Column(
+          children: [
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      "Categories",
+                      style: TextStyle(
+                        color: MyColors.blackColor,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AllCategorySection(),
                         ),
-                      ),
+                      );
+                    },
+                    child: Row(
+                      spacing: 10,
+                      children: [
+                        Text(
+                          "See All",
+                          style: TextStyle(
+                            color: MyColors.blackDarkColor,
+                            fontSize: 15,
+                          ),
+                        ),
+                        CircleAvatar(
+                          radius: 13,
+                          backgroundColor: MyColors.primaryColor,
+                          child: Icon(
+                            Icons.arrow_forward_ios_outlined,
+                            size: 16,
+                            color: MyColors.whiteLightColor,
+                          ),
+                        ),
+                      ],
                     ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => AllCategorySection(),
-                          ),
-                        );
-                      },
-                      child: Row(
-                        spacing: 10,
-                        children: [
-                          Text(
-                            "See All",
-                            style: TextStyle(
-                              color: MyColors.blackDarkColor,
-                              fontSize: 15,
-                            ),
-                          ),
-                          CircleAvatar(
-                            radius: 13,
-                            backgroundColor: MyColors.primaryColor,
-                            child: Icon(
-                              Icons.arrow_forward_ios_outlined,
-                              size: 16,
-                              color: MyColors.whiteLightColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              Expanded(
-                child: CustomCategoryGridview(
-                  categories: provider.categories,
-                  itemCount: 4,
-                ), // used custom grid view and here's code was pasted there to reuse it
-              ),
-            ],
-          ),
+            ),
+            CustomCategoryGridview(
+              categories: provider.categories,
+              itemCount: 4,
+            ),
+          ],
         );
       },
     );

@@ -19,6 +19,8 @@ class CustomCategoryGridview extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return GridView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
       padding: EdgeInsets.all(10),
       itemCount: itemCount,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

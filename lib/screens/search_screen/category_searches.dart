@@ -8,7 +8,7 @@ import '../../custom_widgets/my_colors/my_colors.dart';
 class CategorySearches extends StatelessWidget {
   final String searchQuery;
 
-  const CategorySearches({super.key, this.searchQuery = " "});
+  const CategorySearches({super.key, this.searchQuery = ""});
 
   @override
   Widget build(BuildContext context) {
