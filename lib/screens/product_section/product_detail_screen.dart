@@ -1,3 +1,4 @@
+import 'package:buy_n_sell/providers/wishlist_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -36,15 +37,23 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             if (provider.isLoading) {
               return Center(child: CircularProgressIndicator());
             }
-        
+
             if (provider.error != null) {
               return Center(child: Text(provider.error!));
             }
-        
-            final ProductModel product = provider.allProducts.firstWhere(
-              (p) => p.id == widget.id,
-            );
-        
+
+            final product = provider.allProducts
+                .where((p) => p.id == widget.id)
+                .toList();
+
+            if (product.isEmpty) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+
+            final ProductModel selectedProduct = product.first;
+
             return Stack(
               children: [
                 // ---------------- SCROLLABLE CONTENT ----------------
@@ -57,11 +66,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         width: double.infinity,
                         height: screenWidth * 1.1,
                         child: Image.network(
-                          product.image ?? "",
+                          selectedProduct.image ?? "",
                           fit: BoxFit.cover,
                         ),
                       ),
-        
+
                       Padding(
                         padding: EdgeInsets.all(16),
                         child: Column(
@@ -71,7 +80,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               children: [
                                 Expanded(
                                   child: Text(
-                                    "Rs. ${product.price}",
+                                    "Rs. ${selectedProduct.price}",
                                     style: TextStyle(
                                       fontSize: 22,
                                       fontWeight: FontWeight.bold,
@@ -86,13 +95,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             ),
                             SizedBox(height: 8),
                             Text(
-                              product.description ?? "",
+                              selectedProduct.description ?? "",
                               style: TextStyle(color: Colors.grey),
                             ),
                           ],
                         ),
                       ),
-        
+
                       _sectionTitle("Variations"),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16),
@@ -104,7 +113,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           ],
                         ),
                       ),
-        
+
                       _sectionTitle("Specifications"),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16),
@@ -117,11 +126,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           ],
                         ),
                       ),
-        
+
                       _sectionTitle("Delivery"),
                       _deliveryTile("Standard", "5-7 days", "Rs. 300"),
                       _deliveryTile("Express", "1-2 days", "Rs. 1200"),
-        
+
                       _sectionTitle("Rating & Reviews"),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16),
@@ -137,28 +146,28 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           ],
                         ),
                       ),
-        
+
                       SizedBox(height: 20),
-        
+
                       _sectionHeaderWithAction("Most Popular"),
                       _relatedProductsGrid(
                         _getRandomProducts(provider.allProducts),
                       ),
-        
+
                       _sectionHeaderWithAction("You Might Like"),
                       _relatedProductsGrid(
                         _getCategoryWiseProducts(
                           products: provider.allProducts,
-                          categoryId: product.catId!,
-                          currentProductId: product.id!,
+                          categoryId: selectedProduct.catId!,
+                          currentProductId: selectedProduct.id!,
                         ),
                       ),
-        
+
                       SizedBox(height: 30),
                     ],
                   ),
                 ),
-        
+
                 // ---------------- STICKY BOTTOM BAR ----------------
                 Positioned(
                   left: 0,
@@ -179,9 +188,32 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ),
                     child: Row(
                       children: [
-                        IconButton(
-                          icon: Icon(Icons.favorite_border),
-                          onPressed: () {},
+                        Consumer<WishlistProvider>(
+                          builder:
+                              (
+                                BuildContext context,
+                                WishlistProvider wishlistProvider,
+                                Widget? child,
+                              ) {
+                                final isFav = wishlistProvider.isInWishlist(
+                                  selectedProduct.id!,
+                                );
+
+                                return IconButton(
+                                  icon: Icon(
+                                    isFav
+                                        ? Icons.favorite
+                                        : Icons.favorite_border,
+                                    color: isFav ? MyColors.primaryColor : MyColors.greyColor,
+                                  ),
+                                  onPressed: () {
+                                    wishlistProvider.toggleWishlist(
+                                      selectedProduct.id!,
+                                    );
+                                    print("added to wishlist");
+                                  },
+                                );
+                              },
                         ),
                         SizedBox(width: 10),
                         Expanded(
