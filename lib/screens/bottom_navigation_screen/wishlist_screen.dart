@@ -1,3 +1,4 @@
+import 'package:buy_n_sell/screens/product_section/product_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

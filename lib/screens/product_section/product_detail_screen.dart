@@ -4,10 +4,11 @@ import 'package:provider/provider.dart';
 
 import '../../custom_widgets/my_colors/my_colors.dart';
 import '../../model_class/product_model.dart';
+import '../../providers/cart_provider.dart';
 import '../../providers/product_provider.dart';
 
 class ProductDetailScreen extends StatefulWidget {
-  final String id;
+  final String? id;
 
   const ProductDetailScreen({super.key, required this.id});
 
@@ -150,9 +151,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       SizedBox(height: 20),
 
                       _sectionHeaderWithAction("Most Popular"),
-                      _relatedProductsGrid(
-                        _getRandomProducts(provider.allProducts),
-                      ),
+                       _relatedProductsGrid(
+                          _getRandomProducts(provider.allProducts),
+                        ),
+
 
                       _sectionHeaderWithAction("You Might Like"),
                       _relatedProductsGrid(
@@ -224,7 +226,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                            onPressed: () {},
+                            onPressed: () {
+                              final cartProvider = context.read<CartProvider>();
+                              cartProvider.addToCart(selectedProduct.id!);
+
+                              // Optional: show a snackbar
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text("${selectedProduct.name} added to cart"),
+                                  duration: Duration(seconds: 1),
+                                ),
+                              );
+                            },
+
                             child: Text(
                               "Add to cart",
                               style: TextStyle(color: MyColors.whiteColor),
@@ -318,24 +332,29 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       ),
       itemBuilder: (_, index) {
         final product = products[index];
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Image.network(
-                product.image ?? "",
-                fit: BoxFit.cover,
-                width: double.infinity,
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => ProductDetailScreen(id: product.id),));
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Image.network(
+                  product.image ?? "",
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                ),
               ),
-            ),
-            SizedBox(height: 6),
-            Text(
-              product.name ?? "",
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            Text("Rs. ${product.price}", style: TextStyle(color: Colors.grey)),
-          ],
+              SizedBox(height: 6),
+              Text(
+                product.name ?? "",
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              Text("Rs. ${product.price}", style: TextStyle(color: Colors.grey)),
+            ],
+          ),
         );
       },
     );

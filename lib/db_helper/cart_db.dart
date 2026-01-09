@@ -1,9 +1,9 @@
-// wishlist_db.dart
+// cart_db.dart
 import 'package:sqflite/sqflite.dart';
 import 'database_helper.dart';
 
-class WishlistDb {
-  static const _tableName = 'wishlist';
+class CartDb {
+  static const _tableName = 'cart';
   static Database? _database;
 
   Future<Database> get database async {
@@ -12,18 +12,30 @@ class WishlistDb {
     return _database!;
   }
 
-  Future<void> addToWishlist(String productId) async {
+  Future<void> addToCart(String productId) async {
     final db = await database;
     await db.insert(
       _tableName,
       {
         'productId': productId,
+        'quantity': 1,
         'createdAt': DateTime.now().millisecondsSinceEpoch,
       },
+      conflictAlgorithm: ConflictAlgorithm.ignore,
     );
   }
 
-  Future<void> removeFromWishlist(String productId) async {
+  Future<void> updateQuantity(String productId, int quantity) async {
+    final db = await database;
+    await db.update(
+      _tableName,
+      {'quantity': quantity},
+      where: 'productId = ?',
+      whereArgs: [productId],
+    );
+  }
+
+  Future<void> removeFromCart(String productId) async {
     final db = await database;
     await db.delete(
       _tableName,
@@ -32,13 +44,16 @@ class WishlistDb {
     );
   }
 
-  Future<List<String>> getWishlistProductIds() async {
+  Future<Map<String, int>> getCartItems() async {
     final db = await database;
     final result = await db.query(_tableName);
-    return result.map((e) => e['productId'] as String).toList();
+
+    return {
+      for (var row in result) row['productId'] as String: row['quantity'] as int
+    };
   }
 
-  Future<bool> isInWishlist(String productId) async {
+  Future<bool> isInCart(String productId) async {
     final db = await database;
     final result = await db.query(
       _tableName,

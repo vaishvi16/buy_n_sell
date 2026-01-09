@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../model_class/product_model.dart';
+import '../../screens/product_section/product_detail_screen.dart';
 import '../my_colors/my_colors.dart';
 
 class CustomWishlistListView extends StatelessWidget {
@@ -31,37 +32,41 @@ class CustomWishlistListView extends StatelessWidget {
       itemBuilder: (context, index) {
         final product = products[index];
 
-        return Card(
-          elevation: 2,
-          margin: EdgeInsets.only(bottom: screenWidth * 0.035),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(screenWidth * 0.035),
-          ),
-          color: MyColors.whiteColor,
-          child: Padding(
-            padding: EdgeInsets.all(screenWidth * 0.025),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Align(
-                  alignment: Alignment.center,
-                  child: ClipRRect(
-                    borderRadius:
-                    BorderRadius.circular(screenWidth * 0.025),
-                    child: Image.network(
-                      product.image ?? "",
-                      height: imageSize,
-                      width: imageSize,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) =>  ProductDetailScreen(id: product.id),));
+          },
+          child: Card(
+            elevation: 2,
+            margin: EdgeInsets.only(bottom: screenWidth * 0.035),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(screenWidth * 0.035),
+            ),
+            color: MyColors.whiteColor,
+            child: Padding(
+              padding: EdgeInsets.all(screenWidth * 0.025),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Align(
+                    alignment: Alignment.center,
+                    child: ClipRRect(
+                      borderRadius:
+                      BorderRadius.circular(screenWidth * 0.025),
+                      child: Image.network(
+                        product.image ?? "",
                         height: imageSize,
                         width: imageSize,
-                        color: Colors.grey.shade200,
-                        child: Icon(Icons.image_not_supported),
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          height: imageSize,
+                          width: imageSize,
+                          color: Colors.grey.shade200,
+                          child: Icon(Icons.image_not_supported),
+                        ),
                       ),
                     ),
                   ),
-                ),
 
                 SizedBox(width: screenWidth * 0.03),
 
@@ -126,7 +131,7 @@ class CustomWishlistListView extends StatelessWidget {
                 ),
               ],
             ),
-          ),
+          ),)
         );
       },
     );

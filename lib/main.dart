@@ -1,4 +1,5 @@
 import 'package:buy_n_sell/providers/auth_provider.dart';
+import 'package:buy_n_sell/providers/cart_provider.dart';
 import 'package:buy_n_sell/providers/category_product_provider.dart';
 import 'package:buy_n_sell/providers/category_provider.dart';
 import 'package:buy_n_sell/providers/dashboard_provider.dart';
@@ -35,9 +36,15 @@ void main() async {
             return provider;
           },
         ),
+        ChangeNotifierProvider(create: (_) {
+          final cartProvider = CartProvider();
+          cartProvider.loadCart();
+        return cartProvider;
+        }),
+
       ],
       child: MaterialApp(
-        home: SplashScreen(),
+        home: DashboardScreen(),
         debugShowCheckedModeBanner: false,
       ),
     ),

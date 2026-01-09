@@ -1,4 +1,12 @@
+import 'package:buy_n_sell/screens/product_section/product_detail_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../custom_widgets/my_colors/my_colors.dart';
+import '../../model_class/product_model.dart';
+import '../../providers/cart_provider.dart';
+import '../../providers/product_provider.dart';
+import '../../providers/wishlist_provider.dart';
 
 class AddToCartScreen extends StatefulWidget {
   const AddToCartScreen({super.key});
@@ -10,6 +18,374 @@ class AddToCartScreen extends StatefulWidget {
 class _AddToCartScreenState extends State<AddToCartScreen> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold();
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    return Scaffold(
+      backgroundColor: MyColors.whiteLightColor,
+      appBar: AppBar(
+        backgroundColor: MyColors.whiteColor,
+        elevation: 0,
+        foregroundColor: MyColors.blackColor,
+        title: Row(
+          children: [
+            Text("Cart"),
+            SizedBox(width: screenWidth * 0.02),
+            CircleAvatar(
+              radius: screenWidth * 0.025,
+              backgroundColor: MyColors.blackColor,
+              child: Consumer<CartProvider>(
+                builder: (context, cartProvider, _) {
+                  return Text(
+                    cartProvider.totalItems.toString(),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: screenWidth * 0.03,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+
+      body: Consumer3<CartProvider, ProductProvider, WishlistProvider>(
+        builder:
+            (context, cartProvider, productProvider, wishlistProvider, child) {
+          if (productProvider.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final cartProducts = _getCartProducts(
+            productProvider.allProducts,
+            cartProvider.cartItems,
+          );
+
+          final wishlistProducts = productProvider.allProducts
+              .where((p) => wishlistProvider.isInWishlist(p.id ?? ""))
+              .toList();
+
+          if (cartProducts.isEmpty && wishlistProducts.isEmpty) {
+            return Center(child: Text("Your cart is empty!"));
+          }
+
+          return ListView(
+            padding: EdgeInsets.all(screenWidth * 0.04),
+            children: [
+              _shippingAddressCard(screenWidth),
+              SizedBox(height: screenHeight * 0.02),
+
+              // ---------------- CART ITEMS ----------------
+              if (cartProducts.isEmpty)
+                CircleAvatar(
+                  radius: screenWidth * 0.2,
+                  child: Center(
+                    child: Image.asset(
+                      "assets/logos/5_miles.png",
+                      width: screenWidth * 0.3,
+                      height: screenWidth * 0.3,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                )
+              else
+                ...cartProducts.map((item) {
+                  final product = item['product'] as ProductModel;
+                  final quantity = item['quantity'] as int;
+                  return Padding(
+                    padding:
+                    EdgeInsets.only(bottom: screenHeight * 0.015),
+                    child: GestureDetector(
+                      onTap: () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                ProductDetailScreen(id: product.id),
+                          ),
+                        );
+                      },
+                      child: _cartItem(
+                        product: product,
+                        quantity: quantity,
+                        screenWidth: screenWidth,
+                      ),
+                    ),
+                  );
+                }).toList(),
+
+              // ---------------- WISHLIST ITEMS ----------------
+              if (wishlistProducts.isNotEmpty) ...[
+                SizedBox(height: screenHeight * 0.03),
+                Text(
+                  "From Your Wishlist",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: screenWidth * 0.04,
+                  ),
+                ),
+                SizedBox(height: screenHeight * 0.015),
+                ...wishlistProducts.map((product) {
+                  return Padding(
+                    padding:
+                    EdgeInsets.only(bottom: screenHeight * 0.015),
+                    child: GestureDetector(
+                      onTap: () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                ProductDetailScreen(id: product.id),
+                          ),
+                        );
+                      },
+                      child: _wishlistItem(product, screenWidth),
+                    ),
+                  );
+                }).toList(),
+              ],
+            ],
+          );
+        },
+      ),
+
+      bottomNavigationBar: SafeArea(top: false, child: _bottomCheckoutBar()),
+    );
+  }
+
+  // ---------------- SHIPPING ADDRESS ----------------
+  Widget _shippingAddressCard(double screenWidth) {
+    return Container(
+      padding: EdgeInsets.all(screenWidth * 0.035),
+      decoration: BoxDecoration(
+        color: MyColors.whiteColor,
+        borderRadius: BorderRadius.circular(screenWidth * 0.03),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Shipping Address",
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                SizedBox(height: screenWidth * 0.015),
+                Text(
+                  "26, Duong So 2, Thao Dien Ward,\nAn Phu, District 2, Ho Chi Minh city",
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: screenWidth * 0.03,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(Icons.edit, color: Colors.grey),
+        ],
+      ),
+    );
+  }
+
+  // ---------------- CART ITEM ----------------
+  Widget _cartItem({
+    required ProductModel product,
+    required int quantity,
+    required double screenWidth,
+  }) {
+    return Container(
+      padding: EdgeInsets.all(screenWidth * 0.03),
+      decoration: BoxDecoration(
+        color: MyColors.whiteColor,
+        borderRadius: BorderRadius.circular(screenWidth * 0.03),
+      ),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(screenWidth * 0.025),
+            child: Image.network(
+              product.image ?? "",
+              height: screenWidth * 0.22,
+              width: screenWidth * 0.18,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
+                height: screenWidth * 0.22,
+                width: screenWidth * 0.18,
+                color: MyColors.greyColor,
+                child:  Icon(Icons.image_not_supported),
+              ),
+            ),
+          ),
+
+          SizedBox(width: screenWidth * 0.03),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  product.name ?? "",
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: screenWidth * 0.015),
+                Text(
+                  "Rs. ${product.price}",
+                  style:  TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+          ),
+
+          Row(
+            children: [
+              IconButton(
+                icon:  Icon(Icons.remove),
+                onPressed: () {
+                  context.read<CartProvider>().decreaseQty(product.id!);
+                },
+              ),
+              Text(quantity.toString()),
+              IconButton(
+                icon:  Icon(Icons.add),
+                onPressed: () {
+                  context.read<CartProvider>().increaseQty(product.id!);
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ---------------- WISHLIST ITEM ----------------
+  Widget _wishlistItem(ProductModel product, double screenWidth) {
+    return Container(
+      padding: EdgeInsets.all(screenWidth * 0.03),
+      decoration: BoxDecoration(
+        color: MyColors.whiteColor,
+        borderRadius: BorderRadius.circular(screenWidth * 0.03),
+      ),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(screenWidth * 0.025),
+            child: Image.network(
+              product.image ?? "",
+              height: screenWidth * 0.22,
+              width: screenWidth * 0.18,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
+                height: screenWidth * 0.22,
+                width: screenWidth * 0.18,
+                color: MyColors.greyColor,
+                child: const Icon(Icons.image_not_supported),
+              ),
+            ),
+          ),
+          SizedBox(width: screenWidth * 0.03),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  product.name ?? "",
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: screenWidth * 0.015),
+                Text(
+                  "Rs. ${product.price}",
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _bottomCheckoutBar() {
+    return Card(
+      margin: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+      elevation: 8,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            Expanded(
+              child: Consumer<CartProvider>(
+                builder: (context, cartProvider, _) {
+                  double total = 0;
+
+                  for (final entry in cartProvider.cartItems.entries) {
+                    final product = context
+                        .read<ProductProvider>()
+                        .allProducts
+                        .firstWhere(
+                          (p) => p.id == entry.key,
+                      orElse: () => ProductModel(),
+                    );
+
+                    final price =
+                        double.tryParse(product.price ?? '0') ?? 0;
+                    total += price * entry.value;
+                  }
+
+                  return Text(
+                    "Total  Rs. ${total.toStringAsFixed(2)}",
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  );
+                },
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: MyColors.primaryLightColor,
+                padding:
+                const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0,
+              ),
+              onPressed: () {},
+              child: Text(
+                "Checkout",
+                style: TextStyle(color: MyColors.whiteLightColor),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<Map<String, dynamic>> _getCartProducts(
+      List<ProductModel> allProducts,
+      Map<String, int> cartItems,
+      ) {
+    final List<Map<String, dynamic>> result = [];
+
+    for (final entry in cartItems.entries) {
+      final product = allProducts.firstWhere(
+            (p) => p.id == entry.key,
+        orElse: () => ProductModel(),
+      );
+
+      if (product.id != null) {
+        result.add({'product': product, 'quantity': entry.value});
+      }
+    }
+
+    return result;
   }
 }
