@@ -1,3 +1,5 @@
+import 'package:buy_n_sell/screens/payment_screens/payment_screen.dart';
+import 'package:buy_n_sell/screens/payment_screens/shipping_address.dart';
 import 'package:buy_n_sell/screens/product_section/product_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -39,7 +41,7 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
                   return Text(
                     cartProvider.totalItems.toString(),
                     style: TextStyle(
-                      color: Colors.white,
+                      color: MyColors.whiteColor,
                       fontSize: screenWidth * 0.03,
                     ),
                   );
@@ -54,7 +56,7 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
         builder:
             (context, cartProvider, productProvider, wishlistProvider, child) {
           if (productProvider.isLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(child: CircularProgressIndicator());
           }
 
           final cartProducts = _getCartProducts(
@@ -176,14 +178,17 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
                 Text(
                   "26, Duong So 2, Thao Dien Ward,\nAn Phu, District 2, Ho Chi Minh city",
                   style: TextStyle(
-                    color: Colors.grey,
+                    color: MyColors.greyColor,
                     fontSize: screenWidth * 0.03,
                   ),
                 ),
               ],
             ),
           ),
-          Icon(Icons.edit, color: Colors.grey),
+          IconButton(onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => ShippingAddressScreen(),));
+          },
+          icon: Icon(Icons.edit, color: MyColors.greyColor)),
         ],
       ),
     );
@@ -282,7 +287,7 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
                 height: screenWidth * 0.22,
                 width: screenWidth * 0.18,
                 color: MyColors.greyColor,
-                child: const Icon(Icons.image_not_supported),
+                child:  Icon(Icons.image_not_supported),
               ),
             ),
           ),
@@ -299,7 +304,7 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
                 SizedBox(height: screenWidth * 0.015),
                 Text(
                   "Rs. ${product.price}",
-                  style: const TextStyle(fontWeight: FontWeight.w600),
+                  style:  TextStyle(fontWeight: FontWeight.w600),
                 ),
               ],
             ),
@@ -311,11 +316,11 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
 
   Widget _bottomCheckoutBar() {
     return Card(
-      margin: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+      margin:  EdgeInsets.fromLTRB(12, 8, 12, 12),
       elevation: 8,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding:  EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: [
             Expanded(
@@ -339,7 +344,7 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
 
                   return Text(
                     "Total  Rs. ${total.toStringAsFixed(2)}",
-                    style: const TextStyle(
+                    style:  TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
@@ -351,13 +356,15 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: MyColors.primaryLightColor,
                 padding:
-                const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+                 EdgeInsets.symmetric(horizontal: 28, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
                 elevation: 0,
               ),
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => PaymentScreen(),));
+              },
               child: Text(
                 "Checkout",
                 style: TextStyle(color: MyColors.whiteLightColor),

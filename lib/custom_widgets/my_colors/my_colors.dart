@@ -10,6 +10,7 @@ class MyColors
   static final blackColor = Colors.black;
   static final blackDarkColor = Colors.black87;
   static final greyColor = Colors.grey.shade500;
+  static final transparentColor = Colors.transparent;
 
 /* static const orangeTile = Color(0xffffe1bb);
   static const orangeDivider = Color(0xffffc77e);
