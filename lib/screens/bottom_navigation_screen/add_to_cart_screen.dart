@@ -4,11 +4,13 @@ import 'package:buy_n_sell/screens/product_section/product_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../custom_widgets/custom_fields/checkout_card.dart';
 import '../../custom_widgets/my_colors/my_colors.dart';
 import '../../model_class/product_model.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/product_provider.dart';
 import '../../providers/wishlist_provider.dart';
+import '../../shared_pref/shared_pref.dart';
 
 class AddToCartScreen extends StatefulWidget {
   const AddToCartScreen({super.key});
@@ -18,6 +20,15 @@ class AddToCartScreen extends StatefulWidget {
 }
 
 class _AddToCartScreenState extends State<AddToCartScreen> {
+  String? shippingAddress;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _loadSavedAddress();
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -158,39 +169,25 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
 
   // ---------------- SHIPPING ADDRESS ----------------
   Widget _shippingAddressCard(double screenWidth) {
-    return Container(
-      padding: EdgeInsets.all(screenWidth * 0.035),
-      decoration: BoxDecoration(
-        color: MyColors.whiteColor,
-        borderRadius: BorderRadius.circular(screenWidth * 0.03),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Shipping Address",
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                ),
-                SizedBox(height: screenWidth * 0.015),
-                Text(
-                  "26, Duong So 2, Thao Dien Ward,\nAn Phu, District 2, Ho Chi Minh city",
-                  style: TextStyle(
-                    color: MyColors.greyColor,
-                    fontSize: screenWidth * 0.03,
-                  ),
-                ),
-              ],
-            ),
+    return  CheckoutCard(
+      title: "Shipping Address",
+      subtitle: shippingAddress ?? "Add on your location",
+      onEdit: () async {
+        // saved combined address
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ShippingAddressScreen(savedAddress: shippingAddress,),
           ),
-          IconButton(onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => ShippingAddressScreen(),));
-          },
-          icon: Icon(Icons.edit, color: MyColors.greyColor)),
-        ],
-      ),
+        );
+
+        // If user saved something, update the subtitle
+        if (result != null) {
+          setState(() {
+            shippingAddress = result;
+          });
+        }
+      },
     );
   }
 
@@ -395,4 +392,14 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
 
     return result;
   }
+
+  Future<void> _loadSavedAddress() async {
+    final address = await SharedPref.getShippingAddress();
+    if (address != null && mounted) {
+      setState(() {
+        shippingAddress = address;
+      });
+    }
+  }
+
 }

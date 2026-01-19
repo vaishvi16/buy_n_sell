@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 
 import '../../custom_widgets/custom_fields/checkout_card.dart';
@@ -6,9 +8,11 @@ import '../../custom_widgets/custom_fields/checkout_item_card.dart';
 import '../../custom_widgets/custom_fields/payment_method_card.dart';
 import '../../custom_widgets/custom_fields/shipping_option_card.dart';
 import '../../custom_widgets/my_colors/my_colors.dart';
+import '../../location_helper/location_helper.dart';
 import '../../model_class/product_model.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/product_provider.dart';
+import '../../shared_pref/shared_pref.dart';
 import 'contact_info.dart';
 import 'shipping_address.dart';
 import 'voucher_screen.dart';
@@ -23,6 +27,17 @@ class PaymentScreen extends StatefulWidget {
 class _PaymentScreenState extends State<PaymentScreen> {
   int _selectedShippingIndex = 0;
   double _shippingPrice = 0;
+  String? _shippingAddress;
+  String? _email;
+  String? _phone;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _loadSavedAddress();
+    _loadContactInfo();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,15 +92,22 @@ class _PaymentScreenState extends State<PaymentScreen> {
               //SHIPPING ADDRESS
               CheckoutCard(
                 title: "Shipping Address",
-                subtitle:
-                "26, Duong So 2, Thao Dien Ward,\nAn Phu, District 2\nHo Chi Minh city",
-                onEdit: () {
-                  Navigator.push(
+                subtitle: _shippingAddress ?? "Add on your location",
+                onEdit: () async {
+                  // saved combined address
+                  final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => ShippingAddressScreen(),
+                      builder: (_) => ShippingAddressScreen(savedAddress: _shippingAddress,),
                     ),
                   );
+
+                  // If user saved something, update the subtitle
+                  if (result != null) {
+                    setState(() {
+                      _shippingAddress = result;
+                    });
+                  }
                 },
               ),
 
@@ -94,15 +116,24 @@ class _PaymentScreenState extends State<PaymentScreen> {
               // CONTACT INFO
               CheckoutCard(
                 title: "Contact Information",
-                subtitle: "+84932000000\namandamorgan@example.com",
-                onEdit: () {
-                  Navigator.push(
+                subtitle:
+                "${_phone ?? 'Add phone number'}\n${_email ?? ''}",
+                onEdit: () async {
+                  final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => ContactInfoScreen(),
+                      builder: (_) => ContactInfoScreen(
+                        email: _email,
+                        phone: _phone,
+                      ),
                     ),
                   );
+
+                  if (result == true) {
+                    _loadContactInfo();
+                  }
                 },
+
               ),
 
               SizedBox(height: screenHeight * 0.03),
@@ -121,14 +152,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   ),
                   TextButton(
                     style: ButtonStyle(
-                      shape: WidgetStatePropertyAll(
+                      shape: MaterialStatePropertyAll(
                         RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            screenWidth * 0.03,
-                          ),
-                          side: BorderSide(
-                            color: MyColors.primaryLightColor,
-                          ),
+                          borderRadius: BorderRadius.circular(screenWidth * 0.03),
+                          side: BorderSide(color: MyColors.primaryLightColor),
                         ),
                       ),
                     ),
@@ -206,7 +233,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 },
               ),
 
-
               SizedBox(height: screenHeight * 0.03),
 
               // PAYMENT METHOD
@@ -223,12 +249,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  PaymentMethodCard(),
+                  PaymentMethodCard("Card"),
+                  PaymentMethodCard("UPI Pin"),
+                  PaymentMethodCard("COD"),
                 ],
               ),
             ],
           );
-
         },
       ),
 
@@ -243,8 +270,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               orElse: () => ProductModel(),
             );
 
-            final price =
-                double.tryParse(product.price ?? '0') ?? 0;
+            final price = double.tryParse(product.price ?? '0') ?? 0;
             total += price * entry.value;
           }
 
@@ -280,8 +306,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       vertical: screenHeight * 0.018,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius:
-                      BorderRadius.circular(screenWidth * 0.04),
+                      borderRadius: BorderRadius.circular(screenWidth * 0.04),
                     ),
                   ),
                   onPressed: () {},
@@ -297,4 +322,27 @@ class _PaymentScreenState extends State<PaymentScreen> {
       ),
     );
   }
+
+  Future<void> _loadSavedAddress() async {
+    final address = await SharedPref.getShippingAddress();
+    if (address != null && mounted) {
+      setState(() {
+        _shippingAddress = address;
+      });
+    }
+  }
+
+  Future<void> _loadContactInfo() async {
+    final email = await SharedPref.getUserEmail();
+    final phone = await SharedPref.getPhoneNumber();
+
+    if (mounted) {
+      setState(() {
+        _email = email;
+        _phone = phone;
+      });
+    }
+  }
+
+
 }

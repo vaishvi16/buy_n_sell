@@ -2,9 +2,28 @@ import 'package:flutter/material.dart';
 
 import '../../custom_widgets/custom_fields/checkout_textfield.dart';
 import '../../custom_widgets/my_colors/my_colors.dart';
+import '../../shared_pref/shared_pref.dart';
 
-class ContactInfoScreen extends StatelessWidget {
-  const ContactInfoScreen({super.key});
+class ContactInfoScreen extends StatefulWidget {
+  final String? email;
+  final String? phone;
+
+  const ContactInfoScreen({super.key, this.email, this.phone});
+
+  @override
+  State<ContactInfoScreen> createState() => _ContactInfoScreenState();
+}
+
+class _ContactInfoScreenState extends State<ContactInfoScreen> {
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _emailController.text = widget.email ?? '';
+    _phoneController.text = widget.phone ?? '';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,8 +49,18 @@ class ContactInfoScreen extends StatelessWidget {
         padding: EdgeInsets.all(screenWidth * 0.04),
         child: Column(
           children: [
-            CheckoutTextField(label: "Phone Number", hint: "+84932000000"),
-            CheckoutTextField(label: "Email", hint: "amandamorgan@example.com"),
+            CheckoutTextField(
+              label: "Phone Number",
+              hint: "phone number",
+              controller: _phoneController,
+              textInputType: TextInputType.number,
+            ),
+            CheckoutTextField(
+              label: "Email",
+              hint: "email",
+              controller: _emailController,
+              textInputType: TextInputType.emailAddress,
+            ),
           ],
         ),
       ),
@@ -45,8 +74,12 @@ class ContactInfoScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(screenWidth * 0.03),
             ),
           ),
-          onPressed: () {
-            Navigator.pop(context);
+          onPressed: () async {
+            if (_phoneController.text.isNotEmpty) {
+              await SharedPref.savePhoneNumber(_phoneController.text);
+            }
+
+            Navigator.pop(context, true);
           },
           child: Text(
             "Save Changes",
