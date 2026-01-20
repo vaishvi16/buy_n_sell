@@ -71,6 +71,14 @@ class AuthProvider extends ChangeNotifier {
 
         _isLoggedIn = true;
         _userEmail = email;
+
+        //save user id
+        final userId = loginModel.user?.id?.toString();
+        if (userId != null) {
+          await SharedPref.saveUserId(userId);
+        }
+
+        //save login status and email
         await SharedPref.saveLoginStatus(true);
         await SharedPref.saveUserEmail(email);
       } else {

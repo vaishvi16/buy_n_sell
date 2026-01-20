@@ -6,6 +6,7 @@ class SharedPref {
   static const String _userEmailKey = "userEmail";
   static const String _shippingAddressKey = "shippingAddress";
   static const String _phoneNumberKey = "phoneNumber";
+  static const String _userIdKey = "userId";
 
 
   // Save login status
@@ -60,5 +61,15 @@ class SharedPref {
   static Future<String?> getPhoneNumber() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_phoneNumberKey);
+  }
+
+  static Future<void> saveUserId(String id) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_userIdKey, id);
+  }
+
+  static Future<String?> getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_userIdKey);
   }
 }

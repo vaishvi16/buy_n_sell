@@ -18,7 +18,8 @@ class ApiUrl{
   //Product
   static const String viewProducts = "${baseTestUrl}view_product.php";
 
-
+  //Order
+  static const String placeOrder = "${baseTestUrl}place_order.php" ;
 
 
 }

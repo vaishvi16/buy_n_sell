@@ -9,8 +9,10 @@ import '../../custom_widgets/custom_fields/payment_method_card.dart';
 import '../../custom_widgets/custom_fields/shipping_option_card.dart';
 import '../../custom_widgets/my_colors/my_colors.dart';
 import '../../location_helper/location_helper.dart';
+import '../../model_class/place_order_model.dart';
 import '../../model_class/product_model.dart';
 import '../../providers/cart_provider.dart';
+import '../../providers/order_provider.dart';
 import '../../providers/product_provider.dart';
 import '../../shared_pref/shared_pref.dart';
 import 'contact_info.dart';
@@ -25,6 +27,8 @@ class PaymentScreen extends StatefulWidget {
 }
 
 class _PaymentScreenState extends State<PaymentScreen> {
+  String? _selectedPaymentMethod; // "card", "upi", "cod"
+
   int _selectedShippingIndex = 0;
   double _shippingPrice = 0;
   String? _shippingAddress;
@@ -247,13 +251,37 @@ class _PaymentScreenState extends State<PaymentScreen> {
               SizedBox(height: screenHeight * 0.015),
 
               Row(
-                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  PaymentMethodCard("Card"),
-                  PaymentMethodCard("UPI Pin"),
-                  PaymentMethodCard("COD"),
+                  PaymentMethodCard(
+                    methodName: "Card",
+                    isSelected: _selectedPaymentMethod == "card",
+                    onTap: () {
+                      setState(() {
+                        _selectedPaymentMethod = "card";
+                      });
+                    },
+                  ),
+                  PaymentMethodCard(
+                    methodName: "UPI",
+                    isSelected: _selectedPaymentMethod == "upi",
+                    onTap: () {
+                      setState(() {
+                        _selectedPaymentMethod = "upi";
+                      });
+                    },
+                  ),
+                  PaymentMethodCard(
+                    methodName: "COD",
+                    isSelected: _selectedPaymentMethod == "cod",
+                    onTap: () {
+                      setState(() {
+                        _selectedPaymentMethod = "cod";
+                      });
+                    },
+                  ),
                 ],
               ),
+
             ],
           );
         },
@@ -309,7 +337,74 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       borderRadius: BorderRadius.circular(screenWidth * 0.04),
                     ),
                   ),
-                  onPressed: () {},
+                  onPressed: () async {
+
+                    if (_shippingAddress == null || _shippingAddress!.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Please add shipping address")),
+                      );
+                      return;
+                    }
+
+                    if (_phone == null || _phone!.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Please add phone number")),
+                      );
+                      return;
+                    }
+
+                    if (_selectedPaymentMethod == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Please select payment method")),
+                      );
+                      return;
+                    }
+
+                    final userId = await SharedPref.getUserId();
+                    if (userId == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Please login first.")),
+                      );
+                      return;
+                    }
+
+                    final productIds = cartProvider.cartItems.keys.join(',');
+
+                    if (productIds.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Cart is empty.")),
+                      );
+                      return;
+                    }
+
+                    final orderModel = PlaceOrderModel(
+                      userId: userId,
+                      productIds: productIds,
+                      quantities: cartProvider.cartItems,
+                      address: _shippingAddress!,
+                      phone: _phone!,
+                      paymentMethod: _selectedPaymentMethod!,
+                      shippingType: _selectedShippingIndex == 0 ? "standard" : "express",
+                      totalAmount: total,
+                    );
+
+                    final orderProvider =
+                    Provider.of<OrderProvider>(context, listen: false);
+
+                    final response = await orderProvider.placeOrder(orderModel);
+
+                    if (response.status == "success") {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(response.message ?? "Order placed")),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(response.message ?? "Order failed")),
+                      );
+                    }
+
+                  },
+
                   child: Text(
                     "Pay",
                     style: TextStyle(color: MyColors.whiteColor),
