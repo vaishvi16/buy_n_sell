@@ -12,6 +12,7 @@ import '../../location_helper/location_helper.dart';
 import '../../model_class/place_order_model.dart';
 import '../../model_class/product_model.dart';
 import '../../providers/cart_provider.dart';
+import '../../providers/checkout_provider.dart';
 import '../../providers/order_provider.dart';
 import '../../providers/product_provider.dart';
 import '../../shared_pref/shared_pref.dart';
@@ -27,13 +28,6 @@ class PaymentScreen extends StatefulWidget {
 }
 
 class _PaymentScreenState extends State<PaymentScreen> {
-  String? _selectedPaymentMethod; // "card", "upi", "cod"
-
-  int _selectedShippingIndex = 0;
-  double _shippingPrice = 0;
-  String? _shippingAddress;
-  String? _email;
-  String? _phone;
 
   @override
   void initState() {
@@ -62,27 +56,24 @@ class _PaymentScreenState extends State<PaymentScreen> {
         elevation: 0,
       ),
 
-      body: Consumer2<CartProvider, ProductProvider>(
-        builder: (context, cartProvider, productProvider, _) {
+      body: Consumer3<CartProvider, ProductProvider, CheckoutProvider>(
+        builder: (context, cartProvider, productProvider, checkout, _) {
           final cartItems = cartProvider.cartItems;
 
           final List<Map<String, dynamic>> cartProducts = [];
 
           for (final entry in cartItems.entries) {
             final product = productProvider.allProducts.firstWhere(
-                  (p) => p.id == entry.key,
+              (p) => p.id == entry.key,
               orElse: () => ProductModel(),
             );
 
             if (product.id != null) {
-              cartProducts.add({
-                'product': product,
-                'quantity': entry.value,
-              });
+              cartProducts.add({'product': product, 'quantity': entry.value});
             }
           }
 
-          double totalPrice = _shippingPrice;
+          double totalPrice = checkout.shippingPrice;
           for (final item in cartProducts) {
             final ProductModel product = item['product'];
             final int qty = item['quantity'];
@@ -96,21 +87,20 @@ class _PaymentScreenState extends State<PaymentScreen> {
               //SHIPPING ADDRESS
               CheckoutCard(
                 title: "Shipping Address",
-                subtitle: _shippingAddress ?? "Add on your location",
+                subtitle: checkout.address ?? "Add on your location",
                 onEdit: () async {
                   // saved combined address
                   final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => ShippingAddressScreen(savedAddress: _shippingAddress,),
+                      builder: (_) =>
+                          ShippingAddressScreen(savedAddress: checkout.address),
                     ),
                   );
 
                   // If user saved something, update the subtitle
                   if (result != null) {
-                    setState(() {
-                      _shippingAddress = result;
-                    });
+                    context.read<CheckoutProvider>().setAddress(result);
                   }
                 },
               ),
@@ -120,16 +110,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
               // CONTACT INFO
               CheckoutCard(
                 title: "Contact Information",
-                subtitle:
-                "${_phone ?? 'Add phone number'}\n${_email ?? ''}",
+                subtitle: "${checkout.phone ?? 'Add phone number'}\n${checkout.email ?? ''}",
                 onEdit: () async {
                   final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => ContactInfoScreen(
-                        email: _email,
-                        phone: _phone,
-                      ),
+                      builder: (_) =>
+                          ContactInfoScreen(email: checkout.email, phone: checkout.phone),
                     ),
                   );
 
@@ -137,7 +124,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     _loadContactInfo();
                   }
                 },
-
               ),
 
               SizedBox(height: screenHeight * 0.03),
@@ -158,7 +144,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     style: ButtonStyle(
                       shape: MaterialStatePropertyAll(
                         RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(screenWidth * 0.03),
+                          borderRadius: BorderRadius.circular(
+                            screenWidth * 0.03,
+                          ),
                           side: BorderSide(color: MyColors.primaryLightColor),
                         ),
                       ),
@@ -166,9 +154,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => VoucherScreen(),
-                        ),
+                        MaterialPageRoute(builder: (_) => VoucherScreen()),
                       );
                     },
                     child: Text("Add Voucher"),
@@ -215,12 +201,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 title: "Standard",
                 subtitle: "5–7 days",
                 price: "FREE",
-                selected: _selectedShippingIndex == 0,
+                selected: checkout.shippingIndex == 0,
                 onTap: () {
-                  setState(() {
-                    _selectedShippingIndex = 0;
-                    _shippingPrice = 0;
-                  });
+                  checkout.setShipping(0);
                 },
               ),
 
@@ -228,12 +211,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 title: "Express",
                 subtitle: "1–2 days",
                 price: "Rs. 700",
-                selected: _selectedShippingIndex == 1,
+                selected: checkout.shippingIndex == 1,
                 onTap: () {
-                  setState(() {
-                    _selectedShippingIndex = 1;
-                    _shippingPrice = 700;
-                  });
+                  checkout.setShipping(1);
                 },
               ),
 
@@ -254,47 +234,46 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 children: [
                   PaymentMethodCard(
                     methodName: "Card",
-                    isSelected: _selectedPaymentMethod == "card",
+                    isSelected:
+                        checkout.paymentMethod ==
+                        "card",
                     onTap: () {
-                      setState(() {
-                        _selectedPaymentMethod = "card";
-                      });
+                      checkout.setPaymentMethod("card");
                     },
                   ),
                   PaymentMethodCard(
                     methodName: "UPI",
-                    isSelected: _selectedPaymentMethod == "upi",
+                    isSelected:
+                    checkout.paymentMethod ==
+                        "upi",
                     onTap: () {
-                      setState(() {
-                        _selectedPaymentMethod = "upi";
-                      });
+                      checkout.setPaymentMethod("upi");
                     },
                   ),
                   PaymentMethodCard(
                     methodName: "COD",
-                    isSelected: _selectedPaymentMethod == "cod",
+                    isSelected:
+                    checkout.paymentMethod ==
+                        "cod",
                     onTap: () {
-                      setState(() {
-                        _selectedPaymentMethod = "cod";
-                      });
+                      checkout.setPaymentMethod("cod");
                     },
                   ),
                 ],
               ),
-
             ],
           );
         },
       ),
 
       // BOTTOM BAR
-      bottomNavigationBar: Consumer2<CartProvider, ProductProvider>(
-        builder: (context, cartProvider, productProvider, _) {
-          double total = _shippingPrice;
+      bottomNavigationBar: Consumer3<CartProvider, ProductProvider, CheckoutProvider>(
+        builder: (context, cartProvider, productProvider, checkout, _) {
+          double total = checkout.shippingPrice;
 
           for (final entry in cartProvider.cartItems.entries) {
             final product = productProvider.allProducts.firstWhere(
-                  (p) => p.id == entry.key,
+              (p) => p.id == entry.key,
               orElse: () => ProductModel(),
             );
 
@@ -338,25 +317,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     ),
                   ),
                   onPressed: () async {
-
-                    if (_shippingAddress == null || _shippingAddress!.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Please add shipping address")),
-                      );
-                      return;
-                    }
-
-                    if (_phone == null || _phone!.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Please add phone number")),
-                      );
-                      return;
-                    }
-
-                    if (_selectedPaymentMethod == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Please select payment method")),
-                      );
+                    final error = checkout.validate();
+                    if (error != null) {
+                      ScaffoldMessenger.of(context)
+                          .showSnackBar(SnackBar(content: Text(error)));
                       return;
                     }
 
@@ -368,41 +332,30 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       return;
                     }
 
-                    final productIds = cartProvider.cartItems.keys.join(',');
+                    final productIds =
+                    cartProvider.cartItems.keys.join(',');
 
-                    if (productIds.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Cart is empty.")),
-                      );
-                      return;
-                    }
-
-                    final orderModel = PlaceOrderModel(
+                    final orderModel = checkout.buildOrder(
                       userId: userId,
                       productIds: productIds,
                       quantities: cartProvider.cartItems,
-                      address: _shippingAddress!,
-                      phone: _phone!,
-                      paymentMethod: _selectedPaymentMethod!,
-                      shippingType: _selectedShippingIndex == 0 ? "standard" : "express",
                       totalAmount: total,
                     );
 
-                    final orderProvider =
-                    Provider.of<OrderProvider>(context, listen: false);
+                    final response = await context
+                        .read<OrderProvider>()
+                        .placeOrder(orderModel);
 
-                    final response = await orderProvider.placeOrder(orderModel);
-
-                    if (response.status == "success") {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(response.message ?? "Order placed")),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(response.message ?? "Order failed")),
-                      );
-                    }
-
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          response.message ??
+                              (response.status == "success"
+                                  ? "Order placed"
+                                  : "Order failed"),
+                        ),
+                      ),
+                    );
                   },
 
                   child: Text(
@@ -421,9 +374,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   Future<void> _loadSavedAddress() async {
     final address = await SharedPref.getShippingAddress();
     if (address != null && mounted) {
-      setState(() {
-        _shippingAddress = address;
-      });
+     context.read<CheckoutProvider>().setAddress(address);
     }
   }
 
@@ -432,12 +383,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     final phone = await SharedPref.getPhoneNumber();
 
     if (mounted) {
-      setState(() {
-        _email = email;
-        _phone = phone;
-      });
+      context.read<CheckoutProvider>().setContact(email: email, phone: phone);
     }
   }
-
-
 }
