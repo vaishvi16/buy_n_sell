@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../custom_widgets/custom_fields/checkout_card.dart';
+import '../../custom_widgets/custom_fields/custom_wishlist_card.dart';
 import '../../custom_widgets/my_colors/my_colors.dart';
 import '../../model_class/product_model.dart';
 import '../../providers/cart_provider.dart';
@@ -153,7 +154,7 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
                           ),
                         );
                       },
-                      child: _wishlistItem(product, screenWidth),
+                      child: CustomWishlistCard(product: product,screenWidth: screenWidth),
                     ),
                   );
                 }).toList(),
@@ -257,54 +258,6 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
                 },
               ),
             ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ---------------- WISHLIST ITEM ----------------
-  Widget _wishlistItem(ProductModel product, double screenWidth) {
-    return Container(
-      padding: EdgeInsets.all(screenWidth * 0.03),
-      decoration: BoxDecoration(
-        color: MyColors.whiteColor,
-        borderRadius: BorderRadius.circular(screenWidth * 0.03),
-      ),
-      child: Row(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(screenWidth * 0.025),
-            child: Image.network(
-              product.image ?? "",
-              height: screenWidth * 0.22,
-              width: screenWidth * 0.18,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
-                height: screenWidth * 0.22,
-                width: screenWidth * 0.18,
-                color: MyColors.greyColor,
-                child:  Icon(Icons.image_not_supported),
-              ),
-            ),
-          ),
-          SizedBox(width: screenWidth * 0.03),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  product.name ?? "",
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                SizedBox(height: screenWidth * 0.015),
-                Text(
-                  "Rs. ${product.price}",
-                  style:  TextStyle(fontWeight: FontWeight.w600),
-                ),
-              ],
-            ),
           ),
         ],
       ),

@@ -41,17 +41,20 @@ class CategorySearches extends StatelessWidget {
             ? provider.categories
             : filteredCategories;
 
+        final limitedList =
+        displayList.length > 8 ? displayList.take(8).toList() : displayList;
+
         return GridView.builder(
           shrinkWrap: true,
           physics: NeverScrollableScrollPhysics(),
-          itemCount: displayList.length,
+          itemCount: limitedList.length,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 4,
             crossAxisSpacing: screenWidth * 0.01,
             mainAxisSpacing: screenHeight * 0.015,
           ),
           itemBuilder: (context, index) {
-            final category = displayList[index];
+            final category = limitedList[index];
 
             return GestureDetector(
               onTap: () {
