@@ -9,8 +9,8 @@ import '../../providers/dashboard_provider.dart';
 import '../../providers/product_provider.dart';
 import '../../providers/wishlist_provider.dart';
 import '../login_signup_screen/login_screen.dart';
-import '../order_screens/recieve_screen.dart';
-import '../order_screens/review_selection_screen.dart';
+import '../order_screens/order_history_screen.dart';
+import '../order_screens/review_product_screen.dart';
 import '../search_screen/category_searches.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -42,31 +42,53 @@ class ProfileScreen extends StatelessWidget {
                       Expanded(
                         child: Row(
                           children: [
-                            CircleAvatar(
-                              radius: screenWidth * 0.055,
-                              backgroundImage: NetworkImage(
-                                "https://i.pravatar.cc/150?img=47",
-                              ),
+                            Consumer<AuthProvider>(
+                              builder: (context, authProvider, _) {
+                                final name = authProvider.userName ?? "User";
+                                final firstLetter =
+                                name.isNotEmpty ? name[0].toUpperCase() : "U";
+
+                                return CircleAvatar(
+                                  radius: screenWidth * 0.055,
+                                  backgroundColor: MyColors.primaryColor,
+                                  child: Text(
+                                    firstLetter,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: screenWidth * 0.055,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                             SizedBox(width: screenWidth * 0.025),
-                            Text(
-                              "Hello, Amanda!",
-                              style: TextStyle(
-                                fontSize: screenWidth * 0.06,
-                                fontWeight: FontWeight.w600,
-                              ),
+                            Consumer<AuthProvider>(
+                              builder: (context, authProvider, _) {
+                                final name = authProvider.userName ?? "User";
+                                return Text(
+                                  "Hello, $name !",
+                                  style: TextStyle(
+                                    fontSize: screenWidth * 0.06,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                );
+                              },
                             ),
                           ],
                         ),
                       ),
 
                       IconButton(
-                        icon: Icon(Icons.notes_outlined, size: screenWidth * 0.065),
+                        icon: Icon(
+                          Icons.notes_outlined,
+                          size: screenWidth * 0.065,
+                        ),
                         onPressed: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => ToReceiveScreen(),
+                              builder: (_) => OrderHistoryScreen(),
                             ),
                           );
                         },
@@ -84,26 +106,29 @@ class ProfileScreen extends StatelessWidget {
 
                   // ANNOUNCEMENT
                   Container(
+                    width: screenWidth,
                     padding: EdgeInsets.all(screenWidth * 0.04),
                     decoration: BoxDecoration(
                       color: MyColors.whiteColor,
                       borderRadius: BorderRadius.circular(screenWidth * 0.03),
                     ),
-                    child: Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: Text(
-                            "Announcement\nLorem ipsum dolor sit amet.",
-                            style: TextStyle(
-                              color: MyColors.blackColor,
-                              fontSize: screenWidth * 0.038,
-                            ),
+                        Text(
+                          "Announcement",
+                          style: TextStyle(
+                            color: MyColors.primaryColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: screenWidth * 0.045,
                           ),
                         ),
-                        Icon(
-                          Icons.arrow_forward_ios_outlined,
-                          color: MyColors.blackColor,
-                          size: screenWidth * 0.06,
+                        Text(
+                          "Your voucher is expiring soon!",
+                          style: TextStyle(
+                            color: MyColors.blackColor,
+                            fontSize: screenWidth * 0.038,
+                          ),
                         ),
                       ],
                     ),
@@ -120,25 +145,25 @@ class ProfileScreen extends StatelessWidget {
 
                   Row(
                     children: [
-                      OrderTab(title: "To Pay", onTap: () {}),
+                      // OrderTab(title: "To Pay", onTap: () {}),
                       OrderTab(
-                        title: "To Receive",
+                        title: "Order History",
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => ToReceiveScreen(),
+                              builder: (_) => OrderHistoryScreen(),
                             ),
                           );
                         },
                       ),
                       OrderTab(
-                        title: "To Review",
+                        title: "Review Products",
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => ReviewSelectionScreen(),
+                              builder: (_) => ReviewProductScreen(),
                             ),
                           );
                         },

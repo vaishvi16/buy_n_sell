@@ -4,12 +4,43 @@ import '../../custom_widgets/custom_fields/tracking_status.dart';
 import '../../custom_widgets/my_colors/my_colors.dart';
 
 class OrderTrackingScreen extends StatelessWidget {
-  const OrderTrackingScreen({super.key});
+  final String orderStatus;
+
+  const OrderTrackingScreen({super.key, required this.orderStatus});
+
+  bool isPackedActive() {
+    return orderStatus == "packed" ||
+        orderStatus == "shipped" ||
+        orderStatus == "delivered";
+  }
+
+  bool isShippedActive() {
+    return orderStatus == "shipped" || orderStatus == "delivered";
+  }
+
+  bool isOutForDeliveryActive() {
+    return orderStatus == "out_for_delivery" || orderStatus == "delivered";
+  }
+
+  bool isDeliveredActive() {
+    return orderStatus == "delivered";
+  }
+
+  String getStatusMessage() {
+    if (orderStatus == "pending") {
+      return "Order not packed yet";
+    } else if (orderStatus == "cancelled") {
+      return "Order cancelled";
+    }
+    return "";
+  }
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
+
+    final statusMessage = getStatusMessage();
 
     return Scaffold(
       appBar:
@@ -27,10 +58,28 @@ class OrderTrackingScreen extends StatelessWidget {
               ),
             ),
             SizedBox(height: screenHeight * 0.015),
-            const TrackingStatus(title: "Packed", active: true),
-            const TrackingStatus(title: "Shipped", active: true),
-            const TrackingStatus(title: "Out for delivery", active: false),
-            const TrackingStatus(title: "Delivered", active: false),
+
+            // SHOW MESSAGE FOR PENDING / CANCELLED
+            if (statusMessage.isNotEmpty)
+              Padding(
+                padding: EdgeInsets.only(bottom: screenHeight * 0.02),
+                child: Text(
+                  statusMessage,
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.035,
+                    color: MyColors.primaryColor,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+
+            // TRACKING STEPS
+            TrackingStatus(title: "Packed", active: isPackedActive()),
+            TrackingStatus(title: "Shipped", active: isShippedActive()),
+            TrackingStatus(
+                title: "Out for delivery",
+                active: isOutForDeliveryActive()),
+            TrackingStatus(title: "Delivered", active: isDeliveredActive()),
           ],
         ),
       ),

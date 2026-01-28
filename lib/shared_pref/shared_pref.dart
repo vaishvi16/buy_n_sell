@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class SharedPref {
   static const String _isLoggedInKey = "isLoggedIn";
+  static const String _userNameKey = "userName";
   static const String _userEmailKey = "userEmail";
   static const String _shippingAddressKey = "shippingAddress";
   static const String _phoneNumberKey = "phoneNumber";
@@ -19,6 +20,18 @@ class SharedPref {
   static Future<bool> getLoginStatus() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool(_isLoggedInKey) ?? false;
+  }
+
+  // Save user name
+  static Future<void> saveUserName(String name) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_userNameKey, name);
+  }
+
+  // Get user name
+  static Future<String?> getUserName() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_userNameKey);
   }
 
   // Save user email

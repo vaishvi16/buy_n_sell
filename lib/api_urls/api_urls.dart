@@ -20,6 +20,7 @@ class ApiUrl{
 
   //Order
   static const String placeOrder = "${baseTestUrl}place_order.php" ;
+  static const String getOrder = "${baseTestUrl}get_order.php" ;
 
 
 }

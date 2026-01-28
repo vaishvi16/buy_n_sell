@@ -16,11 +16,14 @@ class AuthProvider extends ChangeNotifier {
   String? _errorMessage;
   bool _isSigningUp = false;
   String? _signupMessage;
+  String? _userName;
 
   // Getters
   bool get isLoggedIn => _isLoggedIn;
 
   bool get isLoading => _isLoading;
+
+  String? get userName => _userName;
 
   String? get userEmail => _userEmail;
 
@@ -38,9 +41,11 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     bool status = await SharedPref.getLoginStatus();
+    String? name = await SharedPref.getUserName();
     String? email = await SharedPref.getUserEmail();
 
     _isLoggedIn = status;
+    _userName = name;
     _userEmail = email;
 
     _isLoading = false;
@@ -78,6 +83,13 @@ class AuthProvider extends ChangeNotifier {
           await SharedPref.saveUserId(userId);
         }
 
+        //save user name
+        final userName = loginModel.user?.name;
+        if (userName != null) {
+          _userName = userName;
+          await SharedPref.saveUserName(userName);
+        }
+
         //save login status and email
         await SharedPref.saveLoginStatus(true);
         await SharedPref.saveUserEmail(email);
@@ -100,6 +112,7 @@ class AuthProvider extends ChangeNotifier {
 
     await SharedPref.logout();
     _isLoggedIn = false;
+    _userName = null;
     _userEmail = null;
 
     _isLoading = false;

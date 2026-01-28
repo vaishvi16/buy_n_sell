@@ -1,7 +1,9 @@
 import 'package:buy_n_sell/providers/wishlist_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 
+import '../../api_urls/api_urls.dart';
 import '../../custom_widgets/my_colors/my_colors.dart';
 import '../../model_class/product_model.dart';
 import '../../providers/cart_provider.dart';
@@ -9,8 +11,13 @@ import '../../providers/product_provider.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final String? id;
+  final bool isFromReview;
 
-  const ProductDetailScreen({super.key, required this.id});
+  const ProductDetailScreen({
+    super.key,
+    required this.id,
+    this.isFromReview = false, // default false
+  });
 
   @override
   State<ProductDetailScreen> createState() => _ProductDetailScreenState();
@@ -48,9 +55,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 .toList();
 
             if (product.isEmpty) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
+              return const Center(child: CircularProgressIndicator());
             }
 
             final ProductModel selectedProduct = product.first;
@@ -89,8 +94,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   ),
                                 ),
                                 IconButton(
-                                  onPressed: () {},
-                                  icon: Icon(Icons.screen_share_outlined),
+                                  onPressed: () {
+                                    _shareProduct(selectedProduct);
+                                  },
+                                  icon: Icon(Icons.share),
                                 ),
                               ],
                             ),
@@ -132,139 +139,149 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       _deliveryTile("Standard", "5-7 days", "Rs. 300"),
                       _deliveryTile("Express", "1-2 days", "Rs. 1200"),
 
-                      _sectionTitle("Rating & Reviews"),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Row(
-                          children: [
-                            Icon(Icons.star, color: Colors.orange),
-                            Icon(Icons.star, color: Colors.orange),
-                            Icon(Icons.star, color: Colors.orange),
-                            Icon(Icons.star, color: Colors.orange),
-                            Icon(Icons.star_border),
-                            SizedBox(width: 8),
-                            Text("4/5"),
-                          ],
+                      //to hide in review screen
+                      if (!widget.isFromReview) ...[
+                        _sectionTitle("Rating & Reviews"),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          child: Row(
+                            children: [
+                              Icon(Icons.star, color: Colors.orange),
+                              Icon(Icons.star, color: Colors.orange),
+                              Icon(Icons.star, color: Colors.orange),
+                              Icon(Icons.star, color: Colors.orange),
+                              Icon(Icons.star_border),
+                              SizedBox(width: 8),
+                              Text("4/5"),
+                            ],
+                          ),
                         ),
-                      ),
 
-                      SizedBox(height: 20),
+                        SizedBox(height: 20),
 
-                      _sectionHeaderWithAction("Most Popular"),
-                       _relatedProductsGrid(
+                        _sectionHeaderWithAction("Most Popular"),
+                        _relatedProductsGrid(
                           _getRandomProducts(provider.allProducts),
                         ),
 
-
-                      _sectionHeaderWithAction("You Might Like"),
-                      _relatedProductsGrid(
-                        _getCategoryWiseProducts(
-                          products: provider.allProducts,
-                          categoryId: selectedProduct.catId!,
-                          currentProductId: selectedProduct.id!,
+                        _sectionHeaderWithAction("You Might Like"),
+                        _relatedProductsGrid(
+                          _getCategoryWiseProducts(
+                            products: provider.allProducts,
+                            categoryId: selectedProduct.catId!,
+                            currentProductId: selectedProduct.id!,
+                          ),
                         ),
-                      ),
-
-                      SizedBox(height: 30),
+                        SizedBox(height: 30),
+                      ],
                     ],
                   ),
                 ),
 
-                // ---------------- STICKY BOTTOM BAR ----------------
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: Container(
-                    height: bottomBarHeight,
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 10,
-                          offset: Offset(0, -2),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Consumer<WishlistProvider>(
-                          builder:
-                              (
-                                BuildContext context,
-                                WishlistProvider wishlistProvider,
-                                Widget? child,
-                              ) {
-                                final isFav = wishlistProvider.isInWishlist(
-                                  selectedProduct.id!,
-                                );
+                if (!widget.isFromReview) ...[
+                  // ---------------- STICKY BOTTOM BAR ----------------
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: Container(
+                      height: bottomBarHeight,
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 10,
+                            offset: Offset(0, -2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Consumer<WishlistProvider>(
+                            builder:
+                                (
+                                  BuildContext context,
+                                  WishlistProvider wishlistProvider,
+                                  Widget? child,
+                                ) {
+                                  final isFav = wishlistProvider.isInWishlist(
+                                    selectedProduct.id!,
+                                  );
 
-                                return IconButton(
-                                  icon: Icon(
-                                    isFav
-                                        ? Icons.favorite
-                                        : Icons.favorite_border,
-                                    color: isFav ? MyColors.primaryColor : MyColors.greyColor,
+                                  return IconButton(
+                                    icon: Icon(
+                                      isFav
+                                          ? Icons.favorite
+                                          : Icons.favorite_border,
+                                      color: isFav
+                                          ? MyColors.primaryColor
+                                          : MyColors.greyColor,
+                                    ),
+                                    onPressed: () {
+                                      wishlistProvider.toggleWishlist(
+                                        selectedProduct.id!,
+                                      );
+                                      print("added to wishlist");
+                                    },
+                                  );
+                                },
+                          ),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: MyColors.blackColor,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              onPressed: () {
+                                final cartProvider = context
+                                    .read<CartProvider>();
+                                cartProvider.addToCart(selectedProduct.id!);
+
+                                // Optional: show a snackbar
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      "${selectedProduct.name} added to cart",
+                                    ),
+                                    duration: Duration(seconds: 1),
                                   ),
-                                  onPressed: () {
-                                    wishlistProvider.toggleWishlist(
-                                      selectedProduct.id!,
-                                    );
-                                    print("added to wishlist");
-                                  },
                                 );
                               },
-                        ),
-                        SizedBox(width: 10),
-                        Expanded(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: MyColors.blackColor,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+
+                              child: Text(
+                                "Add to cart",
+                                style: TextStyle(color: MyColors.whiteColor),
                               ),
                             ),
-                            onPressed: () {
-                              final cartProvider = context.read<CartProvider>();
-                              cartProvider.addToCart(selectedProduct.id!);
-
-                              // Optional: show a snackbar
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text("${selectedProduct.name} added to cart"),
-                                  duration: Duration(seconds: 1),
+                          ),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: MyColors.primaryColor,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
-                              );
-                            },
-
-                            child: Text(
-                              "Add to cart",
-                              style: TextStyle(color: MyColors.whiteColor),
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 10),
-                        Expanded(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: MyColors.primaryColor,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              onPressed: () {},
+                              child: Text(
+                                "Buy now",
+                                style: TextStyle(
+                                  color: MyColors.whiteLightColor,
+                                ),
                               ),
                             ),
-                            onPressed: () {},
-                            child: Text(
-                              "Buy now",
-                              style: TextStyle(color: MyColors.whiteLightColor),
-                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
+                ],
               ],
             );
           },
@@ -334,7 +351,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         final product = products[index];
         return GestureDetector(
           onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => ProductDetailScreen(id: product.id),));
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ProductDetailScreen(id: product.id),
+              ),
+            );
           },
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -352,7 +374,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              Text("Rs. ${product.price}", style: TextStyle(color: Colors.grey)),
+              Text(
+                "Rs. ${product.price}",
+                style: TextStyle(color: Colors.grey),
+              ),
             ],
           ),
         );
@@ -379,4 +404,34 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
     return filtered.length > 4 ? filtered.take(4).toList() : filtered;
   }
+
+  void _shareProduct(ProductModel selectedProduct) {
+    final imageUrl = getProductImageUrl(selectedProduct.image);
+
+    final shareText = '''
+${selectedProduct.name}
+
+Price: Rs. ${selectedProduct.price}
+
+Colors available
+
+Check this product:
+$imageUrl
+''';
+
+    Share.share(shareText);
+  }
+
+  String getProductImageUrl(String? image) {
+    if (image == null || image.isEmpty) return "";
+
+    // If already a full URL, return as-is
+    if (image.startsWith("http")) {
+      return image;
+    }
+
+    // Otherwise build full path
+    return "${ApiUrl.baseTestUrl}uploads/product/$image";
+  }
+
 }
