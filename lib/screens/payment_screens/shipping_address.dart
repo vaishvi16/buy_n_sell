@@ -3,7 +3,7 @@ import 'package:geocoding/geocoding.dart';
 
 import '../../custom_widgets/custom_fields/checkout_textfield.dart';
 import '../../custom_widgets/my_colors/my_colors.dart';
-import '../../location_helper/location_helper.dart';
+import '../../helper_class/location_helper/location_helper.dart';
 import '../../shared_pref/shared_pref.dart';
 
 class ShippingAddressScreen extends StatefulWidget {

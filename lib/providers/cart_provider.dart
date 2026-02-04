@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../db_helper/cart_db.dart';
+
+import '../helper_class/db_helper/cart_db.dart';
 
 class CartProvider extends ChangeNotifier {
   final CartDb _db = CartDb();

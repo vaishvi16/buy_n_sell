@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../db_helper/wishlist_db.dart';
+import '../helper_class/db_helper/wishlist_db.dart';
+
 
 class WishlistProvider extends ChangeNotifier {
   final WishlistDb _db = WishlistDb();

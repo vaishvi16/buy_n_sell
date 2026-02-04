@@ -1,11 +1,13 @@
 import 'package:buy_n_sell/custom_widgets/my_appbar/my_appbar.dart';
 import 'package:buy_n_sell/custom_widgets/my_colors/my_colors.dart';
+import 'package:buy_n_sell/providers/auction_provider.dart';
 import 'package:buy_n_sell/screens/search_screen/category_searches.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/category_provider.dart';
 import '../../providers/product_provider.dart';
+import '../auction_screens/auction_home_screen.dart';
 import '../category_section/category_section.dart';
 import '../search_screen/search_screen.dart';
 
@@ -24,6 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<CategoryProvider>(context, listen: false).fetchCategories();
+      Provider.of<AuctionProvider>(context, listen: false).fetchAuctions();
     });
   }
 
@@ -53,6 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
+          AuctionHomeSection(),
           CategorySection(),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 8.0),

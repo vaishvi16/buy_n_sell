@@ -1,3 +1,4 @@
+import 'package:buy_n_sell/providers/auction_provider.dart';
 import 'package:buy_n_sell/providers/auth_provider.dart';
 import 'package:buy_n_sell/providers/cart_provider.dart';
 import 'package:buy_n_sell/providers/category_product_provider.dart';
@@ -26,6 +27,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => OrderProvider()),
         ChangeNotifierProvider(create: (_) => CheckoutProvider()),
         ChangeNotifierProvider(create: (_) => OrderHistoryProvider()),
+        ChangeNotifierProvider(create: (_) => AuctionProvider()),
         ChangeNotifierProvider(
           create: (_) {
             final productProvider = ProductProvider();

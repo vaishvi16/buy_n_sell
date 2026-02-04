@@ -8,7 +8,6 @@ import '../../custom_widgets/custom_fields/checkout_item_card.dart';
 import '../../custom_widgets/custom_fields/payment_method_card.dart';
 import '../../custom_widgets/custom_fields/shipping_option_card.dart';
 import '../../custom_widgets/my_colors/my_colors.dart';
-import '../../location_helper/location_helper.dart';
 import '../../model_class/place_order_model.dart';
 import '../../model_class/product_model.dart';
 import '../../providers/cart_provider.dart';
