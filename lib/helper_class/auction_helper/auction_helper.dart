@@ -9,7 +9,7 @@ class AuctionHelper extends ChangeNotifier {
   Timer? _timer;
 
   int remainingSeconds = 0;
-  String highestBid = "0";
+  String highestBid = "1";
   bool auctionEnded = false;
   bool initialized = false;
   bool isLast10Seconds = false; // Last 10 sec tracking

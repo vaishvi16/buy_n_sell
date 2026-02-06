@@ -68,8 +68,8 @@ class AuctionDetailScreen extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              helper.auctionEnded
-                                  ? "Auction Ended"
+                              helper.auctionEnded || product["bid_status"] == 'available'
+                                  ? (product["bid_status"] == 'available' ? "Upcoming Auction" : "Auction Ended")
                                   : "Auction Running",
                             ),
                           ],
@@ -79,9 +79,9 @@ class AuctionDetailScreen extends StatelessWidget {
 
                         // Highest Bid
                         Text(
-                          helper.auctionEnded
-                              ? "Highest Bid"
-                              : "Current Highest Bid",
+                           product["bid_status"] == 'available'
+                              ? "Starting Bid"
+                              : helper.auctionEnded && product["bid_status"] == 'sold' ? "Highest Bid" : "Current Highest Bid",
                         ),
                         SizedBox(height: screenWidth * 0.015),
                         Text(
@@ -118,8 +118,10 @@ class AuctionDetailScreen extends StatelessWidget {
                                   : null,
                             ),
                             child: Text(
-                              helper.auctionEnded
+                              helper.auctionEnded && product["bid_status"] != 'available'
                                   ? "⏱ Auction Ended"
+                                  : product["bid_status"] == 'available'
+                                  ? "⏱ Upcoming Auction"
                                   : "⏱ Auction ends in ${formatTime(helper.remainingSeconds)}",
                               style: TextStyle(
                                 fontSize: screenWidth * 0.050,
@@ -150,7 +152,7 @@ class AuctionDetailScreen extends StatelessWidget {
                                 vertical: screenWidth * 0.012,
                               ),
                             ),
-                            onPressed: helper.auctionEnded ? null : () {},
+                            onPressed: (helper.auctionEnded || product["bid_status"] == 'available') ? null : () {},
                             child: Text("Place Bid"),
                           ),
                         ),

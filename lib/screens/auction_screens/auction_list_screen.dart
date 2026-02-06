@@ -23,6 +23,7 @@ class AuctionListScreen extends StatelessWidget {
 
             final allAuctions = [
               ...provider.liveAuctions,
+              ...provider.upcomingAuctions,
               ...provider.endedAuctions
             ];
 
@@ -36,7 +37,7 @@ class AuctionListScreen extends StatelessWidget {
               ),
               itemBuilder: (context, index) {
                 final product = allAuctions[index];
-                final isEnded = product.bidStatus == 'sold';
+                final isEnded = product.bidStatus == 'sold' || product.bidStatus == 'available';
 
                 return GestureDetector(
                   onTap: () {
@@ -63,6 +64,7 @@ class AuctionListScreen extends StatelessWidget {
                       "bid_status": product.bidStatus
                     },
                     isEnded: isEnded,
+                    productId: product.id,
                   ),
                 );
               },

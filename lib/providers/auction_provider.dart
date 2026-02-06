@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -8,6 +9,7 @@ import '../model_class/auction_model.dart';
 class AuctionProvider with ChangeNotifier {
   List<AuctionProductModel> liveAuctions = [];
   List<AuctionProductModel> endedAuctions = [];
+  List<AuctionProductModel> upcomingAuctions = [];
   bool isLoading = false;
 
   Future<void> fetchAuctions() async {
@@ -19,6 +21,11 @@ class AuctionProvider with ChangeNotifier {
 
     liveAuctions = data
         .where((e) => e['bid_status'] == 'active')
+        .map((e) => AuctionProductModel.fromJson(e))
+        .toList();
+
+    upcomingAuctions = data
+        .where((e) => e['bid_status'] == 'available')
         .map((e) => AuctionProductModel.fromJson(e))
         .toList();
 
@@ -53,6 +60,26 @@ class AuctionProvider with ChangeNotifier {
 
     return data;
   }
+
+  // show product wise highest bid amount [works for ended product status also]
+  Future<String> getHighestBidDisplay(String productId) async {
+    try {
+      final bidData = await getCurrentHighestBid(productId);
+      if (bidData != null && bidData["bid_amount"] != null) {
+        return bidData["bid_amount"].toString();
+      }
+
+      final winnerData = await getBidWinner(productId);
+      if (winnerData != null && winnerData["winning_bid"] != null) {
+        return winnerData["winning_bid"].toString();
+      }
+
+      return "1";
+    } catch (e) {
+      return "1";
+    }
+  }
+
 
 
   // Get Auction Winner (finalize auction)

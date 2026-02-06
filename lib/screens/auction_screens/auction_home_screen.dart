@@ -18,11 +18,17 @@ class AuctionHomeSection extends StatelessWidget {
       child: Consumer<AuctionProvider>(
         builder: (context, provider, _) {
           if (provider.isLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return  Center(child: CircularProgressIndicator());
           }
 
-          if (provider.liveAuctions.isEmpty) {
-            return const Text("No live auctions");
+          // Show both live + upcoming
+          final homeAuctions = [
+            ...provider.liveAuctions,
+            ...provider.upcomingAuctions
+          ];
+
+          if (homeAuctions.isEmpty) {
+            return  Text("Auctions starting soon!");
           }
 
           return Column(
@@ -38,17 +44,17 @@ class AuctionHomeSection extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const Spacer(),
+                   Spacer(),
                   TextButton(
                     onPressed: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const AuctionListScreen(),
+                          builder: (_) =>  AuctionListScreen(),
                         ),
                       );
                     },
-                    child: const Text("See All"),
+                    child:  Text("See All"),
                   ),
                 ],
               ),
@@ -57,8 +63,8 @@ class AuctionHomeSection extends StatelessWidget {
 
               GridView.builder(
                 shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: provider.liveAuctions.length >= 4 ? 4 : provider.liveAuctions.length,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: homeAuctions.length >= 4 ? 4 : homeAuctions.length,
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
                   crossAxisSpacing: screenWidth * 0.03,
@@ -66,7 +72,7 @@ class AuctionHomeSection extends StatelessWidget {
                   childAspectRatio: 0.75,
                 ),
                 itemBuilder: (context, index) {
-                  final product = provider.liveAuctions[index];
+                  final product = homeAuctions[index];
 
                   return GestureDetector(
                     onTap: () {
@@ -79,6 +85,7 @@ class AuctionHomeSection extends StatelessWidget {
                               "name": product.name,
                               "image": product.image,
                               "price": product.price,
+                              "bid_status": product.bidStatus
                             },
                           ),
                         ),
@@ -89,7 +96,10 @@ class AuctionHomeSection extends StatelessWidget {
                         "name": product.name,
                         "image": product.image,
                         "price": product.price,
+                        "bid_status": product.bidStatus,
                       },
+                      isEnded: product.bidStatus == 'available',
+                        productId: product.id,
                     ),
                   );
                 },
