@@ -7,11 +7,16 @@ import '../../model_class/product_model.dart';
 import '../../providers/auction_provider.dart';
 import '../../providers/product_provider.dart';
 
-class AuctionDetailScreen extends StatelessWidget {
+class AuctionDetailScreen extends StatefulWidget {
   final Map<String, dynamic> product;
 
   const AuctionDetailScreen({super.key, required this.product});
 
+  @override
+  State<AuctionDetailScreen> createState() => _AuctionDetailScreenState();
+}
+
+class _AuctionDetailScreenState extends State<AuctionDetailScreen> {
   String formatTime(int seconds) {
     final m = (seconds ~/ 60).toString().padLeft(2, '0');
     final s = (seconds % 60).toString().padLeft(2, '0');
@@ -43,7 +48,7 @@ class AuctionDetailScreen extends StatelessWidget {
                 children: [
                   // Product Image
                   Image.network(
-                    product["image"],
+                    widget.product["image"],
                     height: screenWidth * 0.7,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -60,7 +65,7 @@ class AuctionDetailScreen extends StatelessWidget {
                           children: [
                             Expanded(
                               child: Text(
-                                product["name"],
+                                widget.product["name"],
                                 style: TextStyle(
                                   fontSize: screenWidth * 0.055,
                                   fontWeight: FontWeight.bold,
@@ -68,8 +73,12 @@ class AuctionDetailScreen extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              helper.auctionEnded || product["bid_status"] == 'available'
-                                  ? (product["bid_status"] == 'available' ? "Upcoming Auction" : "Auction Ended")
+                              helper.auctionEnded ||
+                                      widget.product["bid_status"] ==
+                                          'available'
+                                  ? (widget.product["bid_status"] == 'available'
+                                        ? "Upcoming Auction"
+                                        : "Auction Ended")
                                   : "Auction Running",
                             ),
                           ],
@@ -79,13 +88,16 @@ class AuctionDetailScreen extends StatelessWidget {
 
                         // Highest Bid
                         Text(
-                           product["bid_status"] == 'available'
+                          widget.product["bid_status"] == 'available'
                               ? "Starting Bid"
-                              : helper.auctionEnded && product["bid_status"] == 'sold' ? "Highest Bid" : "Current Highest Bid",
+                              : helper.auctionEnded &&
+                                    widget.product["bid_status"] == 'sold'
+                              ? "Highest Bid"
+                              : "Current Highest Bid",
                         ),
                         SizedBox(height: screenWidth * 0.015),
                         Text(
-                         "\$${helper.highestBid}",
+                          "\$${helper.highestBid}",
                           style: TextStyle(
                             fontSize: screenWidth * 0.065,
                             fontWeight: FontWeight.bold,
@@ -110,7 +122,9 @@ class AuctionDetailScreen extends StatelessWidget {
                               boxShadow: helper.isLast10Seconds
                                   ? [
                                       BoxShadow(
-                                        color: MyColors.redColor.withOpacity(0.5),
+                                        color: MyColors.redColor.withOpacity(
+                                          0.5,
+                                        ),
                                         blurRadius: 10,
                                         spreadRadius: 2,
                                       ),
@@ -118,9 +132,11 @@ class AuctionDetailScreen extends StatelessWidget {
                                   : null,
                             ),
                             child: Text(
-                              helper.auctionEnded && product["bid_status"] != 'available'
+                              helper.auctionEnded &&
+                                      widget.product["bid_status"] !=
+                                          'available'
                                   ? "⏱ Auction Ended"
-                                  : product["bid_status"] == 'available'
+                                  : widget.product["bid_status"] == 'available'
                                   ? "⏱ Upcoming Auction"
                                   : "⏱ Auction ends in ${formatTime(helper.remainingSeconds)}",
                               style: TextStyle(
@@ -152,7 +168,16 @@ class AuctionDetailScreen extends StatelessWidget {
                                 vertical: screenWidth * 0.012,
                               ),
                             ),
-                            onPressed: (helper.auctionEnded || product["bid_status"] == 'available') ? null : () {},
+                            onPressed:
+                                (helper.auctionEnded ||
+                                    widget.product["bid_status"] == 'available')
+                                ? null
+                                : () =>
+                                    _showBidDialog(
+                                      context,
+                                      helper,
+                                      screenWidth,
+                                    ),
                             child: Text("Place Bid"),
                           ),
                         ),
@@ -163,7 +188,7 @@ class AuctionDetailScreen extends StatelessWidget {
                         _buildProductDetails(
                           productProvider,
                           screenWidth,
-                          product["id"],
+                          widget.product["id"],
                         ),
                       ],
                     ),
@@ -180,7 +205,7 @@ class AuctionDetailScreen extends StatelessWidget {
   AuctionHelper _createAuctionHelper(AuctionProvider provider) {
     final helper = AuctionHelper(
       provider: provider,
-      productId: product["id"].toString(),
+      productId: widget.product["id"].toString(),
     );
     helper.initAuction();
     return helper;
@@ -312,4 +337,66 @@ class AuctionDetailScreen extends StatelessWidget {
       ),
     );
   }
+
+  void _showBidDialog(BuildContext context, AuctionHelper helper, double screenWidth) async {
+    final TextEditingController bidController = TextEditingController();
+
+    // Get FRESH highest bid before opening dialog
+    final freshBidData = await helper.provider.getCurrentHighestBid(helper.productId);
+    final currentBid = freshBidData?["bid_amount"];
+    final bidData = int.tryParse(currentBid?.toString().split('.').first ?? "1") ?? 1;
+
+    bidController.text = (bidData + 1).toString();
+
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(screenWidth * 0.03)),
+          title: Text("Place Your Bid", style: TextStyle(fontSize: screenWidth * 0.05, fontWeight: FontWeight.bold)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                  "Current: \$${freshBidData?["bid_amount"]?.toString() ?? helper.highestBid ?? "1"}",
+                  style: TextStyle(fontSize: screenWidth * 0.045, fontWeight: FontWeight.w600, color: MyColors.greenColor)
+              ),
+              SizedBox(height: screenWidth * 0.02),
+              TextField(
+                controller: bidController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: "Your bid (must be higher)",
+                  prefixText: "\$ ",
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: Text("Cancel")),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: MyColors.primaryColor),
+              onPressed: () async {
+                Navigator.pop(context);
+                final result = await helper.placeBid(bidController.text);
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(result["message"] ?? "Unknown error"),
+                      backgroundColor: result["success"] ? Colors.green : Colors.red,
+                      duration: Duration(seconds: result["success"] ? 2 : 4),
+                    ),
+                  );
+                }
+              },
+              child: Text("Place Bid"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
 }

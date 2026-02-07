@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../providers/auction_provider.dart';
+import '../../shared_pref/shared_pref.dart';
 
 class AuctionHelper extends ChangeNotifier {
   final AuctionProvider provider;
@@ -100,6 +101,31 @@ class AuctionHelper extends ChangeNotifier {
     isLast10Seconds = false;
     notifyListeners();
   }
+
+  Future<Map<String, dynamic>> placeBid(String bidAmount) async {
+    // Check login
+    final userId = await SharedPref.getUserId();
+    if (userId == null) {
+      return {"success": false, "message": "Please login first"};
+    }
+
+    // Validate : bid amount > current amount
+    final currentBid = int.tryParse(highestBid ?? "1") ?? 1;
+    final newBid = int.tryParse(bidAmount) ?? 0;
+    if (newBid <= currentBid) {
+      return {"success": false, "message": "Bid must be higher than \$$currentBid"};
+    }
+
+    final result = await provider.placeBid(productId, userId, bidAmount);
+
+    if (result["success"]) {
+      await Future.delayed(Duration(milliseconds: 500));
+      await _loadHighestBid(); // Refresh bid
+      notifyListeners();
+    }
+    return result;
+  }
+
 
   @override
   void dispose() {

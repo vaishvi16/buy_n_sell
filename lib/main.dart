@@ -52,7 +52,7 @@ void main() async {
 
       ],
       child: MaterialApp(
-        home: DashboardScreen(),
+        home: SplashScreen(),
         debugShowCheckedModeBanner: false,
       ),
     ),
