@@ -12,6 +12,7 @@ class MyColors
   static final greyColor = Colors.grey.shade500;
   static final greyLightColor = Colors.grey.shade50;
   static final transparentColor = Colors.transparent;
+  static final orangeColor = Colors.orange.shade100;
   static final greenColor = Colors.green;
   static final redColor = Colors.redAccent;
 

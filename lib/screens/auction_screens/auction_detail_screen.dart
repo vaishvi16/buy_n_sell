@@ -6,6 +6,7 @@ import '../../helper_class/auction_helper/auction_helper.dart';
 import '../../model_class/product_model.dart';
 import '../../providers/auction_provider.dart';
 import '../../providers/product_provider.dart';
+import '../winner_screen/winner_screen.dart';
 
 class AuctionDetailScreen extends StatefulWidget {
   final Map<String, dynamic> product;
@@ -207,6 +208,19 @@ class _AuctionDetailScreenState extends State<AuctionDetailScreen> {
       provider: provider,
       productId: widget.product["id"].toString(),
     );
+
+    helper.onWinnerDetected = (winnerName, amount, isWinner) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => WinnerDialog(
+          winnerName: winnerName,
+          winningAmount: amount,
+          isWinner: isWinner,
+        ),
+      );
+    };
+
     helper.initAuction();
     return helper;
   }

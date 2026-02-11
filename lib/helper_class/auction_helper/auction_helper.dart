@@ -6,6 +6,8 @@ import '../../shared_pref/shared_pref.dart';
 class AuctionHelper extends ChangeNotifier {
   final AuctionProvider provider;
   final String productId;
+  bool winnerDialogShown = false;
+  void Function(String winnerName, String amount, bool isWinner)? onWinnerDetected;
 
   Timer? _timer;
 
@@ -93,13 +95,39 @@ class AuctionHelper extends ChangeNotifier {
   }
 
   Future<void> _finalizeAuction() async {
-    await provider.getBidWinner(productId);
-    await _loadFinalHighestBid(); // This loads final winning bid
+    final winnerData = await provider.getBidWinner(productId);
+
+    await _loadFinalHighestBid();
 
     auctionEnded = true;
     remainingSeconds = 0;
     isLast10Seconds = false;
+
     notifyListeners();
+
+    if (winnerDialogShown) return;
+    if (winnerData == null) return;
+    if (winnerData["status"] != "sold") return;
+
+    winnerDialogShown = true;
+
+    final loggedInUserId = await SharedPref.getUserId();
+
+    bool isWinner = false;
+
+    if (loggedInUserId != null &&
+        loggedInUserId.toString() ==
+            winnerData["winner_user_id"].toString()) {
+      isWinner = true;
+    }
+
+    if (onWinnerDetected != null) {
+      onWinnerDetected!(
+        winnerData["winner_name"] ?? "Winner",
+        winnerData["winning_bid"] ?? highestBid,
+        isWinner,
+      );
+    }
   }
 
   Future<Map<String, dynamic>> placeBid(String bidAmount) async {

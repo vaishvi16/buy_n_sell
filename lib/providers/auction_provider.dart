@@ -81,14 +81,27 @@ class AuctionProvider with ChangeNotifier {
   }
 
   // Get Auction Winner (finalize auction)
-  Future<Map<String, dynamic>> getBidWinner(String productId) async {
-    final res = await http.get(
-      Uri.parse("${ApiUrl.getBidWinner}?product_id=$productId"),
-    );
+  Future<Map<String, dynamic>?> getBidWinner(String productId) async {
+    try {
+      final res = await http.get(
+        Uri.parse("${ApiUrl.getBidWinner}?product_id=$productId"),
+      );
 
-    final data = json.decode(res.body);
-    return data;
+      print("Winner API Response: ${res.body}");
+
+      if (res.statusCode != 200) return null;
+
+      final data = json.decode(res.body);
+
+      if (data == null || data.isEmpty) return null;
+
+      return data;
+    } catch (e) {
+      print("Winner API Error: $e");
+      return null;
+    }
   }
+
 
   Future<Map<String, dynamic>> placeBid(String productId, String userId, String bidAmount) async {
     try {
@@ -101,7 +114,7 @@ class AuctionProvider with ChangeNotifier {
         },
       );
 
-      print("🔥 RAW Response: ${res.body}");
+      print(" RAW Response: ${res.body}");
 
       // PERFECT FIX: Handle PLAIN TEXT "Bid placed"
       if (res.statusCode == 200) {
@@ -129,7 +142,7 @@ class AuctionProvider with ChangeNotifier {
 
       return {"success": false, "message": "Server error (${res.statusCode})"};
     } catch (e) {
-      print("❌ Full Error: $e");
+      print("Full Error: $e");
       return {"success": false, "message": "Network error"};
     }
   }
