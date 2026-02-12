@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+
+import '../../screens/sell_product_screens/sell_product_screen.dart';
 
 class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
   final List<Widget>? actions;
@@ -8,6 +11,7 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Widget? navigate;
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
+  final Function(String imagePath)? onImageSelected;
 
   MyAppBar({
     required this.readOnly,
@@ -16,7 +20,8 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
     required this.controller,
     this.navigate,
     this.onChanged,
-    this.onSubmitted
+    this.onSubmitted,
+    this.onImageSelected
   });
 
   @override
@@ -60,7 +65,18 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
                     contentPadding: EdgeInsets.all(0),
                     labelText: 'Search...',
                     prefixIcon: Icon(Icons.search),
-                    suffixIcon: Icon(Icons.camera_alt),
+                    suffixIcon: IconButton(
+                      icon: Icon(Icons.camera_alt),
+                      onPressed: () async {
+                        final ImagePicker picker = ImagePicker();
+                        final XFile? image =
+                        await picker.pickImage(source: ImageSource.camera);
+
+                        if (image != null) {
+                          _showImageOptions(context, image.path);
+                        }
+                      },
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(12)),
                     ),
@@ -77,4 +93,121 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+
+  void _showImageOptions(BuildContext context, String imagePath) {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding:  EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+
+              // Title
+               Text(
+                "Choose Option",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+               SizedBox(height: 20),
+
+              // OPTIONS ROW
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+
+                  // SEARCH OPTION
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.pop(context);
+                        if (navigate != null) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => navigate!,
+                              settings: RouteSettings(arguments: imagePath),
+                            ),
+                          );
+                        }
+                      },
+                      child: Container(
+                        margin:  EdgeInsets.only(right: 10),
+                        padding:  EdgeInsets.symmetric(vertical: 20),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children:  [
+                            Icon(Icons.search, size: 32, color: Colors.blue),
+                            SizedBox(height: 8),
+                            Text(
+                              "Search",
+                              style: TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // SELL OPTION
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.pop(context);
+
+                        if (onImageSelected != null) {
+                          onImageSelected!(imagePath);
+                        } else if (navigate != null) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => navigate!,
+                              settings: RouteSettings(arguments: imagePath),
+                            ),
+                          );
+                        }
+                      },
+
+                      child: Container(
+                        margin:  EdgeInsets.only(left: 10),
+                        padding:  EdgeInsets.symmetric(vertical: 20),
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children:  [
+                            Icon(Icons.sell, size: 32, color: Colors.green),
+                            SizedBox(height: 8),
+                            Text(
+                              "Sell",
+                              style: TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              SizedBox(height: 10),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }

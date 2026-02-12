@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:buy_n_sell/custom_widgets/my_appbar/my_appbar.dart';
 import 'package:buy_n_sell/providers/product_provider.dart';
 import 'package:buy_n_sell/screens/search_screen/category_searches.dart';
@@ -28,14 +30,31 @@ class _SearchScreenState extends State<SearchScreen> {
     });
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    final imagePath =
+    ModalRoute.of(context)?.settings.arguments as String?;
+
+    if (imagePath != null) {
+      setState(() {
+        isSubmitted = true;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final imagePath =
+    ModalRoute.of(context)?.settings.arguments as String?;
+
     return Scaffold(
       appBar: MyAppBar(
         readOnly: false,
         autoFocus: true,
         controller: _searchController,
+        navigate: SearchScreen(),
         onChanged: (value) {
           setState(() {
             isSubmitted = false;
@@ -51,6 +70,19 @@ class _SearchScreenState extends State<SearchScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
+            if (imagePath != null)
+              Padding(
+                padding:  EdgeInsets.all(12.0),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.file(
+                    File(imagePath),
+                    height: 180,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
             CategorySearches(searchQuery: _searchController.text),
             Row(
               children: [
