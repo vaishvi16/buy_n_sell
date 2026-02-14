@@ -28,6 +28,7 @@ class ApiUrl{
   static const String startBid = "${baseTestUrl}start_bid.php";
   static const String insertBid = "${baseTestUrl}insert_bid.php";
   static const String getAuctionTime = "${baseTestUrl}get_auction_time.php";
+  static const String getProductAttributes = "${baseTestUrl}get_product_attributes.php";
 
 
 }

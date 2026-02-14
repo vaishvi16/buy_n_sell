@@ -28,7 +28,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   void initState() {
     super.initState();
     Future.microtask(() {
-      Provider.of<ProductProvider>(context, listen: false).fetchProducts();
+      final provider = Provider.of<ProductProvider>(context, listen: false);
+
+      provider.fetchProducts().then((_) {
+        if (widget.id != null) {
+          provider.fetchProductAttributes(widget.id!);
+        }
+      });
     });
   }
 
@@ -78,7 +84,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       ),
 
                       Padding(
-                        padding: EdgeInsets.all(16),
+                        padding: EdgeInsets.only(left: 16, right: 16, top: 16),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -110,50 +116,34 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         ),
                       ),
 
-                      _sectionTitle("Variations"),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Row(
-                          children: [
-                            Chip(label: Text("Pink")),
-                            SizedBox(width: 10),
-                            Chip(label: Text("M")),
-                          ],
-                        ),
-                      ),
-
+                      // Attributes list
                       _sectionTitle("Specifications"),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("Material: Cotton 95%, Nylon 5%"),
-                            SizedBox(height: 4),
-                            Text("Origin: EU"),
-                          ],
+                        child: Wrap(
+                          spacing: 8,
+                          children: selectedProduct.attributes.map((attr) {
+                            return Chip(
+                              label: Text("${attr.attributeName}: ${attr.attributeValue}"),
+                            );
+                          }).toList(),
                         ),
                       ),
-
-                      _sectionTitle("Delivery"),
-                      _deliveryTile("Standard", "5-7 days", "Rs. 300"),
-                      _deliveryTile("Express", "1-2 days", "Rs. 1200"),
-
                       //to hide in review screen
                       if (!widget.isFromReview) ...[
                         _sectionTitle("Rating & Reviews"),
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 16),
-                          child: Row(
-                            children: [
-                              Icon(Icons.star, color: Colors.orange),
-                              Icon(Icons.star, color: Colors.orange),
-                              Icon(Icons.star, color: Colors.orange),
-                              Icon(Icons.star, color: Colors.orange),
-                              Icon(Icons.star_border),
-                              SizedBox(width: 8),
-                              Text("4/5"),
-                            ],
+                          child:  Row(
+                            children: List.generate(5, (index) {
+                              return Icon(
+                                index < selectedProduct.averageRating.round()
+                                    ? Icons.star
+                                    : Icons.star_border,
+                                color: MyColors.orangeColor,
+                                size: 20,
+                              );
+                            }),
                           ),
                         ),
 
@@ -294,27 +284,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   Widget _sectionTitle(String title) {
     return Padding(
-      padding: EdgeInsets.all(16),
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 3),
       child: Text(
         title,
         style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-      ),
-    );
-  }
-
-  Widget _deliveryTile(String title, String days, String price) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      child: Container(
-        padding: EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          border: Border.all(color: MyColors.primaryColor),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [Text("$title ($days)"), Text(price)],
-        ),
       ),
     );
   }

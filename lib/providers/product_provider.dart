@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../model_class/product_attribute_model.dart';
 import '../model_class/product_model.dart';
 import '../screens/product_section/product_api.dart';
 
@@ -34,6 +35,24 @@ class ProductProvider extends ChangeNotifier {
     _isLoading = false;
     notifyListeners();
   }
+
+  Future<void> fetchProductAttributes(String productId) async {
+    try {
+      List<ProductAttributeModel> attrs =
+      await _productApi.loadProductAttributes(productId);
+
+      final productIndex =
+      _allProducts.indexWhere((p) => p.id == productId);
+
+      if (productIndex != -1) {
+        _allProducts[productIndex].attributes = attrs;
+        notifyListeners();
+      }
+    } catch (e) {
+      print("Error loading attributes: $e");
+    }
+  }
+
 
 
 }

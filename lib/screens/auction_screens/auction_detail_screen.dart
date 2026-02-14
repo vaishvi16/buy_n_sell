@@ -28,8 +28,10 @@ class _AuctionDetailScreenState extends State<AuctionDetailScreen> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ProductProvider>().fetchProducts();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final provider = context.read<ProductProvider>();
+      await provider.fetchProducts();
+      await provider.fetchProductAttributes(widget.product["id"].toString());
     });
 
     return MultiProvider(
@@ -266,7 +268,7 @@ class _AuctionDetailScreenState extends State<AuctionDetailScreen> {
         ),
         // Product Desc
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
+          padding: EdgeInsets.only(left: screenWidth * 0.04, right: screenWidth * 0.01),
           child: Text(
             selectedProduct.description ?? "",
             style: TextStyle(
@@ -277,76 +279,31 @@ class _AuctionDetailScreenState extends State<AuctionDetailScreen> {
           ),
         ),
 
-        // Variations
-        _sectionTitle("Variations", screenWidth),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
-          child: Row(
-            children: [
-              Chip(label: Text("Pink")),
-              SizedBox(width: screenWidth * 0.025),
-              Chip(label: Text("M")),
-            ],
-          ),
-        ),
-
-        // Specifications
+        // Attributes list
         _sectionTitle("Specifications", screenWidth),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("Material: Cotton 95%, Nylon 5%"),
-              SizedBox(height: screenWidth * 0.01),
-              Text("Origin: EU"),
-            ],
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 3),
+          child: Wrap(
+            spacing: 8,
+            children: selectedProduct.attributes.map((attr) {
+              return Chip(
+                label: Text("${attr.attributeName}: ${attr.attributeValue}"),
+              );
+            }).toList(),
           ),
         ),
-
-        // Delivery
-        _sectionTitle("Delivery", screenWidth),
-        _deliveryTile("Standard", "5-7 days", "Rs. 300", screenWidth),
-        _deliveryTile("Express", "1-2 days", "Rs. 1200", screenWidth),
-
-        SizedBox(height: screenWidth * 0.05),
       ],
     );
   }
 
   Widget _sectionTitle(String title, double screenWidth) {
     return Padding(
-      padding: EdgeInsets.all(screenWidth * 0.04),
+      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
       child: Text(
         title,
         style: TextStyle(
           fontSize: screenWidth * 0.045,
           fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
-
-  Widget _deliveryTile(
-    String title,
-    String days,
-    String price,
-    double screenWidth,
-  ) {
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: screenWidth * 0.04,
-        vertical: screenWidth * 0.015,
-      ),
-      child: Container(
-        padding: EdgeInsets.all(screenWidth * 0.035),
-        decoration: BoxDecoration(
-          border: Border.all(color: MyColors.primaryColor),
-          borderRadius: BorderRadius.circular(screenWidth * 0.025),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [Text("$title ($days)"), Text(price)],
         ),
       ),
     );

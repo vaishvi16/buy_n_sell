@@ -1,3 +1,5 @@
+import 'package:buy_n_sell/model_class/product_attribute_model.dart';
+
 class ProductModel {
   String? id;
   String? userId;
@@ -7,16 +9,21 @@ class ProductModel {
   String? image;
   String? price;
   String? bidStatus;
+  double averageRating = 0.0;
+  List<ProductAttributeModel> attributes = [];
 
-  ProductModel(
-      {this.id,
-        this.userId,
-        this.catId,
-        this.name,
-        this.description,
-        this.image,
-        this.price,
-        this.bidStatus});
+  ProductModel({
+    this.id,
+    this.userId,
+    this.catId,
+    this.name,
+    this.description,
+    this.image,
+    this.price,
+    this.bidStatus,
+    this.averageRating = 0.0,
+    this.attributes = const [],
+  });
 
   ProductModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -27,6 +34,14 @@ class ProductModel {
     image = json['image'];
     price = json['price'];
     bidStatus = json['bid_status'];
+    averageRating = double.tryParse(json['average_rating'].toString()) ?? 0.0;
+
+    attributes = [];
+    if (json['attributes'] != null) {
+      for (var attr in json['attributes']) {
+        attributes.add(ProductAttributeModel.fromJson(attr));
+      }
+    }
   }
 
   Map<String, dynamic> toJson() {

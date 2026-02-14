@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:buy_n_sell/api_urls/api_urls.dart';
 import 'package:http/http.dart' as http;
 
+import '../../model_class/product_attribute_model.dart';
 import '../../model_class/product_model.dart';
 
 class ProductApi{
@@ -55,6 +56,28 @@ class ProductApi{
       }
 
     }
+  }
+
+  Future<List<ProductAttributeModel>> loadProductAttributes(String productId) async {
+    var url = Uri.parse("${ApiUrl.getProductAttributes}?product_id=$productId");
+
+    var response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      var jsonData = jsonDecode(response.body);
+
+      List<ProductAttributeModel> attributes = [];
+
+      if (jsonData['status'] == true && jsonData['attributes'] != null) {
+        for (var attr in jsonData['attributes']) {
+          attributes.add(ProductAttributeModel.fromJson(attr));
+        }
+      }
+
+      return attributes;
+    }
+
+    return [];
   }
 
 }
