@@ -258,107 +258,103 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    child: Container(
-                      height: bottomBarHeight,
-                      padding: EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 10,
-                            offset: Offset(0, -2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Consumer<WishlistProvider>(
-                            builder:
-                                (
-                                  BuildContext context,
-                                  WishlistProvider wishlistProvider,
-                                  Widget? child,
-                                ) {
-                                  final isFav = wishlistProvider.isInWishlist(
-                                    selectedProduct.id!,
-                                  );
+                    child: Consumer2<WishlistProvider, CartProvider>(
+                      builder: (context, wishlistProvider, cartProvider, child) {
+                        final isFav = wishlistProvider.isInWishlist(selectedProduct.id!);
+                        final isInCart = cartProvider.isInCart(selectedProduct.id!);
 
-                                  return IconButton(
-                                    icon: Icon(
-                                      isFav
-                                          ? Icons.favorite
-                                          : Icons.favorite_border,
-                                      color: isFav
-                                          ? MyColors.primaryColor
-                                          : MyColors.greyColor,
-                                    ),
-                                    onPressed: () {
-                                      wishlistProvider.toggleWishlist(
-                                        selectedProduct.id!,
-                                        selectedAttributes,
-                                      );
-                                      print("added to wishlist");
-                                    },
+                        return Container(
+                          height: bottomBarHeight,
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black12,
+                                blurRadius: 10,
+                                offset: Offset(0, -2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              // ---------------- Favorite Button ----------------
+                              IconButton(
+                                icon: Icon(
+                                  isFav ? Icons.favorite : Icons.favorite_border,
+                                  color: isFav ? MyColors.primaryColor : MyColors.greyColor,
+                                ),
+                                onPressed: () {
+                                  wishlistProvider.toggleWishlist(
+                                    selectedProduct.id!,
+                                    selectedAttributes,
                                   );
                                 },
-                          ),
-                          SizedBox(width: 10),
-                          Expanded(
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: MyColors.blackColor,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
                               ),
-                              onPressed: () {
-                                final cartProvider = context
-                                    .read<CartProvider>();
+                              SizedBox(width: 10),
 
-                                cartProvider.selectedAttributes[selectedProduct.id ?? ""] = Map.from(selectedAttributes);
-
-                                cartProvider.addToCart(selectedProduct.id!, selectedAttributes);
-
-                                // Optional: show a snackbar
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      "${selectedProduct.name} added to cart",
+                              // ---------------- Add to Cart / Product Added ----------------
+                              Expanded(
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor:
+                                    isInCart ? MyColors.greyColor : MyColors.blackColor,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
                                     ),
-                                    duration: Duration(seconds: 1),
                                   ),
-                                );
-                              },
+                                  onPressed: isInCart
+                                      ? null
+                                      : () {
+                                    cartProvider.selectedAttributes[selectedProduct.id ?? ""] =
+                                        Map.from(selectedAttributes);
 
-                              child: Text(
-                                "Add to cart",
-                                style: TextStyle(color: MyColors.whiteColor),
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: 10),
-                          Expanded(
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: MyColors.primaryColor,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
+                                    cartProvider.addToCart(
+                                      selectedProduct.id!,
+                                      selectedAttributes,
+                                    );
+
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          "${selectedProduct.name} added to cart",
+                                        ),
+                                        duration: Duration(seconds: 1),
+                                      ),
+                                    );
+                                  },
+                                  child: Text(
+                                    isInCart ? "Added to cart" : "Add to cart",
+                                    style: TextStyle(color: MyColors.whiteColor,fontSize: 13),
+                                  ),
                                 ),
                               ),
-                              onPressed: () {},
-                              child: Text(
-                                "Buy now",
-                                style: TextStyle(
-                                  color: MyColors.whiteLightColor,
+                              SizedBox(width: 10),
+
+                              // ---------------- Buy Now ----------------
+                              Expanded(
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: MyColors.primaryColor,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                  onPressed: () {},
+                                  child: Text(
+                                    "Buy now",
+                                    style: TextStyle(
+                                      color: MyColors.whiteLightColor,
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
+                            ],
                           ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
-                  ),
+                  )
                 ],
               ],
             );
