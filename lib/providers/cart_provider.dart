@@ -9,6 +9,11 @@ class CartProvider extends ChangeNotifier {
 
   Map<String, int> get cartItems => _cartItems;
 
+  Map<String, Map<String, String>> _selectedAttributes = {};
+
+  Map<String, Map<String, String>> get selectedAttributes =>
+      _selectedAttributes;
+
   // Load cart from DB
   Future<void> loadCart() async {
     _cartItems = await _db.getCartItems();
@@ -19,9 +24,15 @@ class CartProvider extends ChangeNotifier {
     return _cartItems.containsKey(productId);
   }
 
-  Future<void> addToCart(String productId) async {
+  Future<void> addToCart(
+      String productId,
+      Map<String, String> attributes,
+      ) async {
+
+    _selectedAttributes[productId] = attributes;
+
     if (isInCart(productId)) {
-      increaseQty(productId);
+      await increaseQty(productId);
     } else {
       await _db.addToCart(productId);
       _cartItems[productId] = 1;

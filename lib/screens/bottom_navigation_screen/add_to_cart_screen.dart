@@ -198,6 +198,10 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
     required int quantity,
     required double screenWidth,
   }) {
+    final attrs = context
+        .read<CartProvider>()
+        .selectedAttributes[product.id];
+
     return Container(
       padding: EdgeInsets.all(screenWidth * 0.03),
       decoration: BoxDecoration(
@@ -238,6 +242,25 @@ class _AddToCartScreenState extends State<AddToCartScreen> {
                   "Rs. ${product.price}",
                   style:  TextStyle(fontWeight: FontWeight.w600),
                 ),
+                if (attrs != null) ...[
+                  SizedBox(height: 6),
+                  Wrap(
+                    spacing: 6,
+                    children: attrs.entries.map((e) {
+                      return Container(
+                        padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: MyColors.whiteLightColor,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          "${e.key}: ${e.value}",
+                          style: TextStyle(fontSize: 12),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
               ],
             ),
           ),

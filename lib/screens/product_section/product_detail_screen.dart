@@ -32,10 +32,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     super.initState();
 
     Future.microtask(() async {
-      final productProvider =
-      Provider.of<ProductProvider>(context, listen: false);
-      final wishlistProvider =
-      Provider.of<WishlistProvider>(context, listen: false);
+      final productProvider = Provider.of<ProductProvider>(
+        context,
+        listen: false,
+      );
+      final wishlistProvider = Provider.of<WishlistProvider>(
+        context,
+        listen: false,
+      );
+      final cartProvider = Provider.of<CartProvider>(context, listen: false);
 
       await productProvider.fetchProducts();
 
@@ -43,13 +48,17 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         await productProvider.fetchProductAttributes(widget.id!);
       }
 
-      final savedData =
-      wishlistProvider.wishlistData[widget.id];
+      final savedData = wishlistProvider.wishlistData[widget.id];
 
       if (savedData != null) {
         setState(() {
-          selectedAttributes =
-          Map<String, String>.from(savedData);
+          selectedAttributes = Map<String, String>.from(savedData);
+        });
+      } else if (cartProvider.selectedAttributes.containsKey(widget.id)) {
+        setState(() {
+          selectedAttributes = Map<String, String>.from(
+            cartProvider.selectedAttributes[widget.id]!,
+          );
         });
       }
     });
@@ -139,7 +148,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         padding: EdgeInsets.symmetric(horizontal: 16),
                         child: Builder(
                           builder: (context) {
-
                             // GROUP ATTRIBUTES BY NAME
                             final Map<String, List<String>> groupedAttributes = {};
 
@@ -159,14 +167,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: groupedAttributes.entries.map((entry) {
-
                                 final attributeName = entry.key;
                                 final values = entry.value;
 
                                 return Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-
                                     SizedBox(height: 12),
 
                                     // Dynamic Heading (Color / Size / Storage etc)
@@ -183,25 +189,24 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                     Wrap(
                                       spacing: 8,
                                       children: values.map((value) {
-
                                         final isSelected =
-                                            selectedAttributes[attributeName] == value;
+                                            selectedAttributes[attributeName] ==
+                                            value;
 
                                         return ChoiceChip(
                                           label: Text(value),
                                           selected: isSelected,
                                           onSelected: (_) {
                                             setState(() {
-                                              selectedAttributes[attributeName] = value;
+                                              selectedAttributes[attributeName] =
+                                                  value;
                                             });
                                           },
                                         );
-
                                       }).toList(),
                                     ),
                                   ],
                                 );
-
                               }).toList(),
                             );
                           },
@@ -213,7 +218,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         _sectionTitle("Rating & Reviews"),
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 16),
-                          child:  Row(
+                          child: Row(
                             children: List.generate(5, (index) {
                               return Icon(
                                 index < selectedProduct.averageRating.round()
@@ -310,7 +315,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               onPressed: () {
                                 final cartProvider = context
                                     .read<CartProvider>();
-                                cartProvider.addToCart(selectedProduct.id!);
+
+                                cartProvider.selectedAttributes[selectedProduct.id ?? ""] = Map.from(selectedAttributes);
+
+                                cartProvider.addToCart(selectedProduct.id!, selectedAttributes);
 
                                 // Optional: show a snackbar
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -461,7 +469,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   void _shareProduct(ProductModel selectedProduct) {
     final imageUrl = getProductImageUrl(selectedProduct.image);
 
-    final shareText = '''
+    final shareText =
+        '''
 ${selectedProduct.name}
 
 Price: Rs. ${selectedProduct.price}
@@ -486,5 +495,4 @@ $imageUrl
     // Otherwise build full path
     return "${ApiUrl.baseTestUrl}uploads/product/$image";
   }
-
 }
