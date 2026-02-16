@@ -209,7 +209,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               ShippingOptionCard(
                 title: "Express",
                 subtitle: "1–2 days",
-                price: "Rs. 700",
+                price: "Rs. 1200",
                 selected: checkout.shippingIndex == 1,
                 onTap: () {
                   checkout.setShipping(1);
@@ -345,16 +345,28 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         .read<OrderProvider>()
                         .placeOrder(orderModel);
 
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          response.message ??
-                              (response.status == "success"
-                                  ? "Order placed"
-                                  : "Order failed"),
+                    if (response.status == "success") {
+
+                      // Clear Cart
+                      await context.read<CartProvider>().clearCart();
+
+                      // Reset Checkout
+                      context.read<CheckoutProvider>().reset();
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Order placed successfully")),
+                      );
+
+                      // Go back to Cart screen
+                      Navigator.pop(context);
+
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(response.message ?? "Order failed"),
                         ),
-                      ),
-                    );
+                      );
+                    }
                   },
 
                   child: Text(

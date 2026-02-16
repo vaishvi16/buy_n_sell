@@ -36,8 +36,8 @@ class DatabaseHelper {
         // Create wishlist table
         await db.execute('''
           CREATE TABLE wishlist (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            productId TEXT UNIQUE,
+            productId TEXT PRIMARY KEY ,
+            attributes TEXT,
             createdAt INTEGER
           )
         ''');

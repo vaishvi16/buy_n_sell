@@ -62,4 +62,14 @@ class CartProvider extends ChangeNotifier {
     }
     return total;
   }
+
+  //to clear cart when order is successfully placed
+  Future<void> clearCart() async {
+    final productIds = _cartItems.keys.toList();
+
+    for (final id in productIds) {
+      await removeFromCart(id);
+    }
+  }
+
 }

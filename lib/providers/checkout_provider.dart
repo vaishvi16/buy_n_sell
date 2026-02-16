@@ -20,7 +20,7 @@ class CheckoutProvider extends ChangeNotifier {
 
   void setShipping(int index) {
     _shippingIndex = index;
-    _shippingPrice = index == 0 ? 0 : 700;
+    _shippingPrice = index == 0 ? 0 : 1200;
     notifyListeners();
   }
 

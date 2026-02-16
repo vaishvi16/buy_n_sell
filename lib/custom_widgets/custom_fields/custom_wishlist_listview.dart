@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../model_class/product_model.dart';
+import '../../providers/wishlist_provider.dart';
 import '../../screens/product_section/product_detail_screen.dart';
 import '../my_colors/my_colors.dart';
 
@@ -108,23 +110,37 @@ class CustomWishlistListView extends StatelessWidget {
                         ),
                       ),
 
-                      SizedBox(height: screenWidth * 0.015),
+                    //  SizedBox(height: screenWidth * 0.015),
 
-                      Row(
-                        children: [
-                          _chip("Pink", screenWidth),
-                          SizedBox(width: screenWidth * 0.015),
-                          _chip("M", screenWidth),
-                           Spacer(),
-                          IconButton(
-                            icon: Icon(
-                              Icons.shopping_bag,
-                              size: screenWidth * 0.05,
-                              color: MyColors.greyColor,
-                            ),
-                            onPressed: () {},
-                          ),
-                        ],
+                      Consumer<WishlistProvider>(
+                        builder: (context, wishlistProvider, _) {
+
+                          final wishlistItem =
+                          wishlistProvider.wishlistData[product.id];
+
+                          final attributes = wishlistItem ?? {};
+
+                          return Row(
+                            children: [
+                              ...attributes.values.map(
+                                    (value) => Padding(
+                                  padding: EdgeInsets.only(right: screenWidth * 0.035),
+                                  child: _chip(value, screenWidth),
+                                ),
+                              ),
+
+                              Spacer(),
+                              IconButton(
+                                icon: Icon(
+                                  Icons.shopping_bag,
+                                  size: screenWidth * 0.05,
+                                  color: MyColors.greyColor,
+                                ),
+                                onPressed: () {},
+                              ),
+                            ],
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -139,10 +155,6 @@ class CustomWishlistListView extends StatelessWidget {
 
   Widget _chip(String text, double screenWidth) {
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: screenWidth * 0.025,
-        vertical: screenWidth * 0.01,
-      ),
       decoration: BoxDecoration(
         color: MyColors.whiteLightColor,
         borderRadius: BorderRadius.circular(screenWidth * 0.015),

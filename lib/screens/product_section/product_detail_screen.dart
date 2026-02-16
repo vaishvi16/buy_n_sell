@@ -24,17 +24,34 @@ class ProductDetailScreen extends StatefulWidget {
 }
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
+  Map<String, String> selectedAttributes = {};
+
+  @override
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
-      final provider = Provider.of<ProductProvider>(context, listen: false);
 
-      provider.fetchProducts().then((_) {
-        if (widget.id != null) {
-          provider.fetchProductAttributes(widget.id!);
-        }
-      });
+    Future.microtask(() async {
+      final productProvider =
+      Provider.of<ProductProvider>(context, listen: false);
+      final wishlistProvider =
+      Provider.of<WishlistProvider>(context, listen: false);
+
+      await productProvider.fetchProducts();
+
+      if (widget.id != null) {
+        await productProvider.fetchProductAttributes(widget.id!);
+      }
+
+      final savedData =
+      wishlistProvider.wishlistData[widget.id];
+
+      if (savedData != null) {
+        setState(() {
+          selectedAttributes =
+          Map<String, String>.from(savedData);
+        });
+      }
     });
   }
 
@@ -120,15 +137,77 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       _sectionTitle("Specifications"),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Wrap(
-                          spacing: 8,
-                          children: selectedProduct.attributes.map((attr) {
-                            return Chip(
-                              label: Text("${attr.attributeName}: ${attr.attributeValue}"),
+                        child: Builder(
+                          builder: (context) {
+
+                            // GROUP ATTRIBUTES BY NAME
+                            final Map<String, List<String>> groupedAttributes = {};
+
+                            for (var attr in selectedProduct.attributes) {
+                              final name = attr.attributeName ?? "";
+                              final value = attr.attributeValue ?? "";
+
+                              if (!groupedAttributes.containsKey(name)) {
+                                groupedAttributes[name] = [];
+                              }
+
+                              if (!groupedAttributes[name]!.contains(value)) {
+                                groupedAttributes[name]!.add(value);
+                              }
+                            }
+
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: groupedAttributes.entries.map((entry) {
+
+                                final attributeName = entry.key;
+                                final values = entry.value;
+
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+
+                                    SizedBox(height: 12),
+
+                                    // Dynamic Heading (Color / Size / Storage etc)
+                                    Text(
+                                      attributeName,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+
+                                    SizedBox(height: 8),
+
+                                    Wrap(
+                                      spacing: 8,
+                                      children: values.map((value) {
+
+                                        final isSelected =
+                                            selectedAttributes[attributeName] == value;
+
+                                        return ChoiceChip(
+                                          label: Text(value),
+                                          selected: isSelected,
+                                          onSelected: (_) {
+                                            setState(() {
+                                              selectedAttributes[attributeName] = value;
+                                            });
+                                          },
+                                        );
+
+                                      }).toList(),
+                                    ),
+                                  ],
+                                );
+
+                              }).toList(),
                             );
-                          }).toList(),
+                          },
                         ),
                       ),
+
                       //to hide in review screen
                       if (!widget.isFromReview) ...[
                         _sectionTitle("Rating & Reviews"),
@@ -212,6 +291,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                     onPressed: () {
                                       wishlistProvider.toggleWishlist(
                                         selectedProduct.id!,
+                                        selectedAttributes,
                                       );
                                       print("added to wishlist");
                                     },

@@ -6,28 +6,33 @@ import '../helper_class/db_helper/wishlist_db.dart';
 class WishlistProvider extends ChangeNotifier {
   final WishlistDb _db = WishlistDb();
 
-  Set<String> _wishlistIds = {};
+  Map<String, Map<String, String>> _wishlistData = {};
 
-  Set<String> get wishlistIds => _wishlistIds;
+  Map<String, Map<String, String>> get wishlistData => _wishlistData;
 
-  // Load wishlist from DB
+  Set<String> get wishlistIds => _wishlistData.keys.toSet();
+
   Future<void> loadWishlist() async {
-    final ids = await _db.getWishlistProductIds();
-    _wishlistIds = ids.toSet();
+    _wishlistData = await _db.getWishlistData();
     notifyListeners();
   }
 
   bool isInWishlist(String productId) {
-    return _wishlistIds.contains(productId);
+    return _wishlistData.containsKey(productId);
   }
 
-  Future<void> toggleWishlist(String productId) async {
+  Future<void> toggleWishlist(
+      String productId,
+      Map<String, String> attributes,
+      ) async {
+
     if (isInWishlist(productId)) {
-      await _db.removeFromWishlist(productId);
-      _wishlistIds.remove(productId);
+      await _db.addToWishlist(productId, attributes); // UPDATE instead of REMOVE
+      _wishlistData[productId] = attributes;
+
     } else {
-      await _db.addToWishlist(productId);
-      _wishlistIds.add(productId);
+      await _db.addToWishlist(productId, attributes);
+      _wishlistData[productId] = attributes;
     }
     notifyListeners();
   }

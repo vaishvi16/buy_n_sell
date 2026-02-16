@@ -8,18 +8,24 @@ class WishlistDb {
 
   Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await DatabaseHelper.database; // Reuse shared DB
+    _database = await DatabaseHelper.database;
     return _database!;
   }
 
-  Future<void> addToWishlist(String productId) async {
+  Future<void> addToWishlist(
+      String productId,
+      Map<String, String> attributes,
+      ) async {
     final db = await database;
+
     await db.insert(
       _tableName,
       {
         'productId': productId,
+        'attributes': jsonEncode(attributes),
         'createdAt': DateTime.now().millisecondsSinceEpoch,
       },
+      conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
 
@@ -32,20 +38,16 @@ class WishlistDb {
     );
   }
 
-  Future<List<String>> getWishlistProductIds() async {
+  Future<Map<String, Map<String, String>>> getWishlistData() async {
     final db = await database;
     final result = await db.query(_tableName);
-    return result.map((e) => e['productId'] as String).toList();
-  }
 
-  Future<bool> isInWishlist(String productId) async {
-    final db = await database;
-    final result = await db.query(
-      _tableName,
-      where: 'productId = ?',
-      whereArgs: [productId],
-      limit: 1,
-    );
-    return result.isNotEmpty;
+    return {
+      for (var row in result)
+        row['productId'] as String:
+        Map<String, String>.from(
+          jsonDecode(row['attributes'] as String),
+        )
+    };
   }
 }
