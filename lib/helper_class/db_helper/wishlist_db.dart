@@ -1,4 +1,6 @@
 // wishlist_db.dart
+import 'dart:convert';
+
 import 'package:sqflite/sqflite.dart';
 import 'database_helper.dart';
 
