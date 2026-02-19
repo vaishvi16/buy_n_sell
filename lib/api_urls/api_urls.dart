@@ -17,6 +17,8 @@ class ApiUrl{
 
   //Product
   static const String viewProducts = "${baseTestUrl}view_product.php";
+  static const String getProductAttributes = "${baseTestUrl}get_product_attributes.php";
+  static const String insertProducts = "${baseTestUrl}insert_product.php";
 
   //Order
   static const String placeOrder = "${baseTestUrl}place_order.php" ;
@@ -28,7 +30,5 @@ class ApiUrl{
   static const String startBid = "${baseTestUrl}start_bid.php";
   static const String insertBid = "${baseTestUrl}insert_bid.php";
   static const String getAuctionTime = "${baseTestUrl}get_auction_time.php";
-  static const String getProductAttributes = "${baseTestUrl}get_product_attributes.php";
-
 
 }

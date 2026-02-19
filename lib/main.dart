@@ -8,6 +8,7 @@ import 'package:buy_n_sell/providers/dashboard_provider.dart';
 import 'package:buy_n_sell/providers/order_history_provider.dart';
 import 'package:buy_n_sell/providers/order_provider.dart';
 import 'package:buy_n_sell/providers/product_provider.dart';
+import 'package:buy_n_sell/providers/sell_product_provider.dart';
 import 'package:buy_n_sell/providers/wishlist_provider.dart';
 import 'package:buy_n_sell/screens/dashboard_screen/dashboard_screen.dart';
 import 'package:buy_n_sell/screens/splash_screen/splash_screen.dart';
@@ -28,6 +29,9 @@ void main() async {
         ChangeNotifierProvider(create: (_) => CheckoutProvider()),
         ChangeNotifierProvider(create: (_) => OrderHistoryProvider()),
         ChangeNotifierProvider(create: (_) => AuctionProvider()),
+        ChangeNotifierProvider(
+          create: (_) => SellProductProvider(),
+        ),
         ChangeNotifierProvider(
           create: (_) {
             final productProvider = ProductProvider();

@@ -1,4 +1,5 @@
 import 'package:buy_n_sell/custom_widgets/custom_fields/custom_wishlist_card.dart';
+import 'package:buy_n_sell/screens/sell_product_screens/sell_product_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -145,7 +146,6 @@ class ProfileScreen extends StatelessWidget {
 
                   Row(
                     children: [
-                      // OrderTab(title: "To Pay", onTap: () {}),
                       OrderTab(
                         title: "Order History",
                         onTap: () {
@@ -158,7 +158,7 @@ class ProfileScreen extends StatelessWidget {
                         },
                       ),
                       OrderTab(
-                        title: "Review Products",
+                        title: "Review Product",
                         onTap: () {
                           Navigator.push(
                             context,
@@ -168,6 +168,9 @@ class ProfileScreen extends StatelessWidget {
                           );
                         },
                       ),
+                      OrderTab(title: "Sell Product", onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => SellProductScreen(),));
+                      }),
                     ],
                   ),
 

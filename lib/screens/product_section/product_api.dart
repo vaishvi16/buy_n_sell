@@ -35,7 +35,13 @@ class ProductApi{
   }
 
   Future<void> loadProductsAsCategory(String? categoryId) async{
-    var url = Uri.parse("${ApiUrl.viewProducts}?cat_id=$categoryId");
+    Uri url;
+
+    if(categoryId != null && categoryId.isNotEmpty){
+      url = Uri.parse("${ApiUrl.viewProducts}?cat_id=$categoryId");
+    }else{
+      url = Uri.parse(ApiUrl.viewProducts);
+    }
 
     var response = await http.get(url);
 

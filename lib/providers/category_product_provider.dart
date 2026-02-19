@@ -14,7 +14,7 @@ class CategoryProductProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  Future<void> fetchProductByCategory(String? categoryId) async {
+  Future<void> fetchProductByCategory([String? categoryId]) async {
     _isLoading = true;
     notifyListeners();
 

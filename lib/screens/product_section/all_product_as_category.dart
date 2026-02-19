@@ -9,7 +9,7 @@ import '../../providers/product_provider.dart';
 class AllProductAsCategory extends StatefulWidget {
   final String? categoryId;
 
-  const AllProductAsCategory({super.key, required this.categoryId});
+  const AllProductAsCategory({super.key, this.categoryId});
 
   @override
   State<AllProductAsCategory> createState() => _AllProductAsCategoryState();
@@ -20,7 +20,11 @@ class _AllProductAsCategoryState extends State<AllProductAsCategory> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<CategoryProductProvider>(context, listen: false).fetchProductByCategory(widget.categoryId);
+      if(widget.categoryId != null && widget.categoryId!.isNotEmpty ){
+        Provider.of<CategoryProductProvider>(context, listen: false).fetchProductByCategory(widget.categoryId);
+      }else{
+        Provider.of<CategoryProductProvider>(context, listen: false).fetchProductByCategory();
+      }
     });
   }
 
@@ -45,7 +49,7 @@ class _AllProductAsCategoryState extends State<AllProductAsCategory> {
             return const Center(child: Text("No products found"));
           }
 
-          return CustomProductGridview(products: provider.products);
+          return SingleChildScrollView(child: CustomProductGridview(products: provider.products));
         },
       ),
     );

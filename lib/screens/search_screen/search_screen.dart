@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 
 import '../../custom_widgets/my_colors/my_colors.dart';
 import '../../providers/category_provider.dart';
+import '../sell_product_screens/sell_product_screen.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -55,6 +56,14 @@ class _SearchScreenState extends State<SearchScreen> {
         autoFocus: true,
         controller: _searchController,
         navigate: SearchScreen(),
+        onImageSelected: (imagePath) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => SellProductScreen(imagePath: imagePath),
+            ),
+          );
+        },
         onChanged: (value) {
           setState(() {
             isSubmitted = false;

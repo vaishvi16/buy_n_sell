@@ -1,4 +1,5 @@
 import 'package:buy_n_sell/providers/wishlist_provider.dart';
+import 'package:buy_n_sell/screens/bottom_navigation_screen/add_to_cart_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -143,78 +144,81 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       ),
 
                       // Attributes list
-                      _sectionTitle("Specifications"),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Builder(
-                          builder: (context) {
-                            // GROUP ATTRIBUTES BY NAME
-                            final Map<String, List<String>> groupedAttributes = {};
+                      if(selectedProduct.attributes.isNotEmpty) ...[
+                        SizedBox(height:8,),
+                        _sectionTitle("Specifications"),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          child: Builder(
+                            builder: (context) {
+                              // GROUP ATTRIBUTES BY NAME
+                              final Map<String, List<String>> groupedAttributes = {};
 
-                            for (var attr in selectedProduct.attributes) {
-                              final name = attr.attributeName ?? "";
-                              final value = attr.attributeValue ?? "";
+                              for (var attr in selectedProduct.attributes) {
+                                final name = attr.attributeName ?? "";
+                                final value = attr.attributeValue ?? "";
 
-                              if (!groupedAttributes.containsKey(name)) {
-                                groupedAttributes[name] = [];
+                                if (!groupedAttributes.containsKey(name)) {
+                                  groupedAttributes[name] = [];
+                                }
+
+                                if (!groupedAttributes[name]!.contains(value)) {
+                                  groupedAttributes[name]!.add(value);
+                                }
                               }
 
-                              if (!groupedAttributes[name]!.contains(value)) {
-                                groupedAttributes[name]!.add(value);
-                              }
-                            }
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: groupedAttributes.entries.map((entry) {
+                                  final attributeName = entry.key;
+                                  final values = entry.value;
 
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: groupedAttributes.entries.map((entry) {
-                                final attributeName = entry.key;
-                                final values = entry.value;
+                                  return Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      SizedBox(height: 12),
 
-                                return Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    SizedBox(height: 12),
-
-                                    // Dynamic Heading (Color / Size / Storage etc)
-                                    Text(
-                                      attributeName,
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
+                                      // Dynamic Heading (Color / Size / Storage etc)
+                                      Text(
+                                        attributeName,
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
-                                    ),
 
-                                    SizedBox(height: 8),
+                                      SizedBox(height: 8),
 
-                                    Wrap(
-                                      spacing: 8,
-                                      children: values.map((value) {
-                                        final isSelected =
-                                            selectedAttributes[attributeName] ==
-                                            value;
-
-                                        return ChoiceChip(
-                                          label: Text(value),
-                                          selected: isSelected,
-                                          onSelected: (_) {
-                                            setState(() {
-                                              selectedAttributes[attributeName] =
+                                      Wrap(
+                                        spacing: 8,
+                                        children: values.map((value) {
+                                          final isSelected =
+                                              selectedAttributes[attributeName] ==
                                                   value;
-                                            });
-                                          },
-                                        );
-                                      }).toList(),
-                                    ),
-                                  ],
-                                );
-                              }).toList(),
-                            );
-                          },
-                        ),
-                      ),
 
+                                          return ChoiceChip(
+                                            label: Text(value),
+                                            selected: isSelected,
+                                            onSelected: (_) {
+                                              setState(() {
+                                                selectedAttributes[attributeName] =
+                                                    value;
+                                              });
+                                            },
+                                          );
+                                        }).toList(),
+                                      ),
+                                    ],
+                                  );
+                                }).toList(),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                       //to hide in review screen
                       if (!widget.isFromReview) ...[
+                        SizedBox(height: 8,),
                         _sectionTitle("Rating & Reviews"),
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 16),
@@ -340,7 +344,24 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                   ),
-                                  onPressed: () {},
+                                  onPressed: () async {
+                                    // Save selected attributes
+                                    cartProvider.selectedAttributes[selectedProduct.id ?? ""] =
+                                        Map.from(selectedAttributes);
+
+                                    // Add current product to cart
+                                    cartProvider.addToCart(
+                                      selectedProduct.id!,
+                                      selectedAttributes,
+                                    );
+
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => AddToCartScreen(),
+                                      ),
+                                    );
+                                  },
                                   child: Text(
                                     "Buy now",
                                     style: TextStyle(
