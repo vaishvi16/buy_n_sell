@@ -138,6 +138,114 @@ class _SellProductScreenState extends State<SellProductScreen> {
                   ),
                 ),
 
+                // Dynamic Attributes
+                if (provider.categoryAttributes.isNotEmpty) ...[
+                  SizedBox(height: 20),
+
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "Specifications",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: 10),
+
+                  ...provider.categoryAttributes.map((attribute) {
+
+                    // ---------------- TEXT FIELD ----------------
+                    if (attribute.attributeType == "text") {
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: 15),
+                        child: TextField(
+                          decoration: InputDecoration(
+                            labelText: attribute.attributeName,
+                            border: OutlineInputBorder(),
+                          ),
+                          onChanged: (value) {
+                            if (value.isEmpty) {
+                              provider.selectedAttributes.remove(attribute.id);
+                            } else {
+                              provider.selectedAttributes[attribute.id!] = [value];
+                            }
+                            provider.notifyListeners();
+                          },
+                        ),
+                      );
+                    }
+
+                    //---------------- NUMBER FIELD ----------------
+                    if (attribute.attributeType == "number") {
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: 15),
+                        child: TextField(
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: attribute.attributeName,
+                            border: OutlineInputBorder(),
+                          ),
+                          onChanged: (value) {
+                            if (value.isEmpty) {
+                              provider.selectedAttributes.remove(attribute.id);
+                            } else {
+                              provider.selectedAttributes[attribute.id!] = [value];
+                            }
+                            provider.notifyListeners();
+                          },
+                        ),
+                      );
+                    }
+
+                    // ---------------- MULTI SELECT DROPDOWN ----------------
+                    if (attribute.attributeType == "dropdown") {
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: 20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+
+                            Text(
+                              attribute.attributeName ?? "",
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+
+                            SizedBox(height: 8),
+
+                            Wrap(
+                              spacing: 8,
+                              children: attribute.attributeOptions!.map((option) {
+
+                                final isSelected =
+                                    provider.selectedAttributes[attribute.id]
+                                        ?.contains(option) ?? false;
+
+                                return FilterChip(
+                                  label: Text(option),
+                                  selected: isSelected,
+                                  selectedColor: MyColors.primaryColor.withOpacity(0.2),
+                                  checkmarkColor: MyColors.primaryColor,
+                                  onSelected: (_) {
+                                    provider.toggleAttributeValue(
+                                        attribute.id!, option);
+                                  },
+                                );
+                              }).toList(),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                    return SizedBox();
+                  }).toList(),
+                ],
+
                 SizedBox(height: 15),
 
                 // Price

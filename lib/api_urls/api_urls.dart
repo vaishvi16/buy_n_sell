@@ -14,6 +14,7 @@ class ApiUrl{
 
   //Category
   static const String viewCategories = "${baseTestUrl}view_category.php";
+  static const String getCategoryAttributes = "${baseTestUrl}get_category_attributes.php";
 
   //Product
   static const String viewProducts = "${baseTestUrl}view_product.php";

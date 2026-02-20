@@ -162,8 +162,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   groupedAttributes[name] = [];
                                 }
 
-                                if (!groupedAttributes[name]!.contains(value)) {
-                                  groupedAttributes[name]!.add(value);
+                                // Split comma-separated values
+                                final splitValues = value.split(",");
+
+                                for (var val in splitValues) {
+                                  final trimmedValue = val.trim(); // remove extra spaces
+
+                                  if (trimmedValue.isNotEmpty &&
+                                      !groupedAttributes[name]!.contains(trimmedValue)) {
+                                    groupedAttributes[name]!.add(trimmedValue);
+                                  }
                                 }
                               }
 

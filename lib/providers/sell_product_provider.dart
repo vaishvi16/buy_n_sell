@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
 import '../api_urls/api_urls.dart';
+import '../model_class/category_attribute_model.dart';
 import '../model_class/category_model.dart';
 import '../shared_pref/shared_pref.dart';
 
@@ -13,6 +14,8 @@ class SellProductProvider extends ChangeNotifier {
   String? selectedCategoryId;
   String? selectedImagePath;
   bool isLoading = false;
+  List<CategoryAttributeModel> categoryAttributes = [];
+  Map<String, List<String>> selectedAttributes = {};
 
   // FETCH CATEGORIES
 
@@ -52,6 +55,11 @@ class SellProductProvider extends ChangeNotifier {
 
   void setCategory(String? value) {
     selectedCategoryId = value;
+
+    if (value != null) {
+      fetchCategoryAttributes(value);
+    }
+
     notifyListeners();
   }
 
@@ -62,7 +70,6 @@ class SellProductProvider extends ChangeNotifier {
     required String description,
     required String price,
   }) async {
-
     if (selectedImagePath == null ||
         selectedCategoryId == null ||
         name.isEmpty ||
@@ -88,24 +95,79 @@ class SellProductProvider extends ChangeNotifier {
     request.fields['price'] = price;
     request.fields['bid_status'] = "inactive";
 
+    // Add dynamic attributes
+    if (selectedAttributes.isNotEmpty) {
+      Map<String, String> formattedAttributes = {};
+
+      selectedAttributes.forEach((key, valueList) {
+        formattedAttributes[key] = valueList.join(",");
+      });
+
+      if (formattedAttributes.isNotEmpty) {
+        request.fields['attributes'] = jsonEncode(formattedAttributes);
+      }
+    }
+
     request.files.add(
       await http.MultipartFile.fromPath('image', selectedImagePath!),
     );
 
-    var response = await request.send();
-    var responseData = await response.stream.bytesToString();
+    try {
+      var response = await request.send();
+      var responseData = await response.stream.bytesToString();
 
-    isLoading = false;
-    notifyListeners();
+      isLoading = false;
+      notifyListeners();
 
-    print("response data for sell product provider: $responseData");
+      print("Response from sell product API: $responseData");
 
-    if (response.statusCode == 200  && responseData.contains("Product Inserted Successfully")) {
-      print("response data when status code 200");
-      return "success";
-    } else {
-      print("response data failed : ${response.statusCode}");
-      return "failed: $responseData";
+      if (response.statusCode == 200 && responseData.contains("Product Inserted Successfully")) {
+        return "success";
+      } else {
+        return "failed: $responseData";
+      }
+    } catch (e) {
+      isLoading = false;
+      notifyListeners();
+      print("Error sending sell product request: $e");
+      return "failed: $e";
     }
+  }
+
+  Future<void> fetchCategoryAttributes(String categoryId) async {
+    try {
+      final response = await http.get(
+        Uri.parse("${ApiUrl.getCategoryAttributes}?category_id=$categoryId"),
+      );
+
+      if (response.statusCode == 200) {
+        final List data = jsonDecode(response.body);
+
+        categoryAttributes =
+            data.map((json) => CategoryAttributeModel.fromJson(json)).toList();
+
+        selectedAttributes.clear(); // reset when category changes
+
+        notifyListeners();
+      } else {
+        print("Failed to fetch attributes");
+      }
+    } catch (e) {
+      print("Error fetching attributes: $e");
+    }
+  }
+
+  void toggleAttributeValue(String attributeId, String value) {
+    if (!selectedAttributes.containsKey(attributeId)) {
+      selectedAttributes[attributeId] = [];
+    }
+
+    if (selectedAttributes[attributeId]!.contains(value)) {
+      selectedAttributes[attributeId]!.remove(value);
+    } else {
+      selectedAttributes[attributeId]!.add(value);
+    }
+
+    notifyListeners();
   }
 }
