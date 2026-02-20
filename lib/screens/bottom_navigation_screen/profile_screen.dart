@@ -66,9 +66,12 @@ class ProfileScreen extends StatelessWidget {
                             SizedBox(width: screenWidth * 0.025),
                             Consumer<AuthProvider>(
                               builder: (context, authProvider, _) {
-                                final name = authProvider.userName ?? "User";
+                                final fullName = authProvider.userName ?? "User";
+
+                                // Extract first name
+                                final firstName = fullName.trim().split(" ").first;
                                 return Text(
-                                  "Hello, $name !",
+                                  "Hello, $firstName !",
                                   style: TextStyle(
                                     fontSize: screenWidth * 0.06,
                                     fontWeight: FontWeight.w600,

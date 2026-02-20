@@ -1,4 +1,3 @@
-
 import 'package:buy_n_sell/custom_widgets/custom_fields/custom_textfields.dart';
 import 'package:buy_n_sell/screens/login_signup_screen/forgot_password_screen.dart';
 import 'package:buy_n_sell/screens/login_signup_screen/signup_screen.dart';
@@ -62,12 +61,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
               Expanded(
                 child: Padding(
-                  padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom,
+                  ),
                   child: SingleChildScrollView(
                     child: Padding(
                       padding: EdgeInsets.symmetric(
                         horizontal: screenWidth * 0.08,
-                        vertical: screenWidth * 0.02
+                        vertical: screenWidth * 0.02,
                       ),
                       child: Form(
                         key: _formKey,
@@ -142,17 +143,31 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               onPressed: () async {
                                 if (_formKey.currentState!.validate()) {
-                                  final authProvider = Provider.of<AuthProvider>(context, listen: false);
-                                  await authProvider.loginUser(emailController.text, pswdController.text);
+                                  final authProvider =
+                                      Provider.of<AuthProvider>(
+                                        context,
+                                        listen: false,
+                                      );
+                                  await authProvider.loginUser(
+                                    emailController.text,
+                                    pswdController.text,
+                                  );
 
                                   if (authProvider.isLoggedIn) {
                                     Navigator.pushReplacement(
                                       context,
-                                      MaterialPageRoute(builder: (_) => DashboardScreen()),
+                                      MaterialPageRoute(
+                                        builder: (_) => DashboardScreen(),
+                                      ),
                                     );
-                                  } else if (authProvider.errorMessage != null) {
+                                  } else if (authProvider.errorMessage !=
+                                      null) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text(authProvider.errorMessage!)),
+                                      SnackBar(
+                                        content: Text(
+                                          authProvider.errorMessage!,
+                                        ),
+                                      ),
                                     );
                                     authProvider.clearError();
                                   }
@@ -173,7 +188,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => ForgotPasswordScreen(),
+                                    builder: (context) =>
+                                        ForgotPasswordScreen(),
                                   ),
                                 );
                               },
@@ -229,7 +245,41 @@ class _LoginScreenState extends State<LoginScreen> {
                                   "facebook",
                                 ),
                                 SizedBox(width: 15),
-                                socialIcon("assets/icons/google.png", "google"),
+                                GestureDetector(
+                                  onTap: () async {
+                                    final authProvider =
+                                        Provider.of<AuthProvider>(
+                                          context,
+                                          listen: false,
+                                        );
+                                    await authProvider.googleLogin();
+
+                                    if (authProvider.isLoggedIn) {
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => DashboardScreen(),
+                                        ),
+                                      );
+                                    } else if (authProvider.errorMessage !=
+                                        null) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            authProvider.errorMessage!,
+                                          ),
+                                        ),
+                                      );
+                                      authProvider.clearError();
+                                    }
+                                  },
+                                  child: socialIcon(
+                                    "assets/icons/google.png",
+                                    "google",
+                                  ),
+                                ),
                               ],
                             ),
                           ],
@@ -247,17 +297,12 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget socialIcon(String path, String provider) {
-    return GestureDetector(
-      onTap: () {
-      //  _handleLogin(provider);
-      },
-      child: CircleAvatar(
-        radius: 21,
-        backgroundColor: Colors.white,
-        child: ClipRRect(
-          borderRadius: BorderRadiusGeometry.all(Radius.circular(21)),
-          child: Image.asset(path, fit: BoxFit.contain),
-        ),
+    return CircleAvatar(
+      radius: 21,
+      backgroundColor: Colors.white,
+      child: ClipRRect(
+        borderRadius: BorderRadiusGeometry.all(Radius.circular(21)),
+        child: Image.asset(path, fit: BoxFit.contain),
       ),
     );
   }

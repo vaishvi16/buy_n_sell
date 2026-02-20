@@ -52,55 +52,34 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  //manual login
   Future<void> loginUser(String email, String password) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      var url = Uri.parse(ApiUrl.login);
-
       var response = await http.post(
-        url,
-        body: {"mail": email, "password": password},
+        Uri.parse(ApiUrl.login),
+        body: {
+          "mail": email,
+          "password": password,
+          "auth_provider": "manual",
+        },
       );
 
       final jsonData = jsonDecode(response.body);
-      LoginModel loginModel = LoginModel.fromJson(jsonData);
-
-      if (loginModel.status == "success") {
-        print("Login success!!!! ${response.body}");
-
-        print("User ID: ${loginModel.user?.id}");
-        print("User Name: ${loginModel.user?.name}");
-
-        _isLoggedIn = true;
-        _userEmail = email;
-
-        //save user id
-        final userId = loginModel.user?.id?.toString();
-        if (userId != null) {
-          await SharedPref.saveUserId(userId);
-        }
-
-        //save user name
-        final userName = loginModel.user?.name;
-        if (userName != null) {
-          _userName = userName;
-          await SharedPref.saveUserName(userName);
-        }
-
-        //save login status and email
-        await SharedPref.saveLoginStatus(true);
-        await SharedPref.saveUserEmail(email);
+      if (jsonData['status'] == 'success') {
+        _handleLoginSuccess(jsonData['user']);
       } else {
+        _errorMessage = jsonData['message'] ?? 'Login failed';
         _isLoggedIn = false;
-        _errorMessage = loginModel.message ?? "Login failed!";
       }
     } catch (e) {
+      _errorMessage = "Something went wrong: $e";
       _isLoggedIn = false;
-      _errorMessage = "Something went wrong. Try again! $e";
     }
+
     _isLoading = false;
     notifyListeners();
   }
@@ -119,17 +98,51 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _handleLogin(String provider) async {
-    switch (provider) {
-      case "google":
-        await googleLogin();
+  // Handle successful login
+  void _handleLoginSuccess(Map<String, dynamic> user) async {
+    _isLoggedIn = true;
+    _userEmail = user['mail'];
+    _userName = user['name'];
 
-      case "facebook":
-        await facebookLogin();
+    await SharedPref.saveLoginStatus(true);
+    await SharedPref.saveUserEmail(_userEmail!);
+    await SharedPref.saveUserName(_userName!);
+  }
 
-      case "instagram":
-        await instagramLogin();
+  // Social Login (Google / Facebook / Instagram)
+  Future<void> loginSocial({
+    required String email,
+    required String authProvider, // "google", "facebook", "instagram"
+    String? name,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      var response = await http.post(
+        Uri.parse(ApiUrl.login),
+        body: {
+          "mail": email,
+          "auth_provider": authProvider,
+          if (name != null) "name": name,
+        },
+      );
+
+      final jsonData = jsonDecode(response.body);
+      if (jsonData['status'] == 'success') {
+        _handleLoginSuccess(jsonData['user']);
+      } else {
+        _errorMessage = jsonData['message'] ?? 'Social login failed';
+        _isLoggedIn = false;
+      }
+    } catch (e) {
+      _errorMessage = "Something went wrong: $e";
+      _isLoggedIn = false;
     }
+
+    _isLoading = false;
+    notifyListeners();
   }
 
   // Google Sign-In
@@ -139,15 +152,20 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      await _googleSignIn.signOut();
       GoogleSignInAccount? googleAccount = await _googleSignIn.signIn();
       if (googleAccount != null) {
-        _isLoggedIn = true;
-        _userEmail = googleAccount.email;
-        await SharedPref.saveLoginStatus(true);
-        await SharedPref.saveUserEmail(_userEmail!);
+        await loginSocial(
+          email: googleAccount.email,
+          name: googleAccount.displayName,
+          authProvider: "google",
+        );
+      } else {
+        _errorMessage = "Google login cancelled.";
+        _isLoggedIn = false;
       }
     } catch (e) {
-      _errorMessage = "Google login failed!";
+      _errorMessage = "Google login failed: $e";
       _isLoggedIn = false;
     }
 
@@ -173,16 +191,12 @@ class AuthProvider extends ChangeNotifier {
     _signupMessage = null;
     notifyListeners();
 
-    try{
+    try {
       var url = Uri.parse(ApiUrl.signUp);
 
       var response = await http.post(
         url,
-        body: {
-          'name': name,
-          'mail': email,
-          'password': password,
-        },
+        body: {'name': name, 'mail': email, 'password': password},
       );
 
       var jsonData = jsonDecode(response.body);
@@ -200,7 +214,7 @@ class AuthProvider extends ChangeNotifier {
         _signupMessage = "Signup failed";
 
       }
-    }catch(e){
+    } catch (e) {
       _signupMessage = "Something went wrong. Try again.";
 
     }
