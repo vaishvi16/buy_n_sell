@@ -22,6 +22,7 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
   final TextEditingController _postcodeController = TextEditingController();
 
   bool _locationFetchedOnce = false;
+  bool _isFetchingLocation = false;
 
   @override
   void initState() {
@@ -54,6 +55,10 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
     if (_locationFetchedOnce) return;
     _locationFetchedOnce = true;
 
+    setState(() {
+      _isFetchingLocation = true;
+    });
+
     Placemark? place = await LocationHelper.getCurrentPlacemark();
 
     if (place != null) {
@@ -62,6 +67,10 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
       _addressController.text = place.street ?? '';
       _postcodeController.text = place.postalCode ?? '';
     }
+
+    setState(() {
+      _isFetchingLocation = false;
+    });
   }
 
   @override
@@ -81,32 +90,60 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
           ),
         ),
       ),
-      body: Padding(
-        padding: EdgeInsets.all(screenWidth * 0.04),
-        child: Column(
-          children: [
-            CheckoutTextField(
-              label: "Country",
-              hint: "Country",
-              controller: _countryController,
+      body: Stack(
+        children: [
+          Padding(
+            padding: EdgeInsets.all(screenWidth * 0.04),
+            child: Column(
+              children: [
+                CheckoutTextField(
+                  label: "Country",
+                  hint: "Country",
+                  controller: _countryController,
+                ),
+                CheckoutTextField(
+                  label: "Address",
+                  hint: "Street address",
+                  controller: _addressController,
+                ),
+                CheckoutTextField(
+                  label: "Town / City",
+                  hint: "City",
+                  controller: _cityController,
+                ),
+                CheckoutTextField(
+                  label: "Postcode",
+                  hint: "Postal Code",
+                  controller: _postcodeController,
+                ),
+              ],
             ),
-            CheckoutTextField(
-              label: "Address",
-              hint: "Street address",
-              controller: _addressController,
+          ),
+          if (_isFetchingLocation && _locationFetchedOnce)
+            Container(
+              color: Colors.black.withOpacity(0.4),
+              child: Center(
+                child: Container(
+                  padding: EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 15),
+                      Text(
+                        "Fetching your location...",
+                        style: TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
-            CheckoutTextField(
-              label: "Town / City",
-              hint: "City",
-              controller: _cityController,
-            ),
-            CheckoutTextField(
-              label: "Postcode",
-              hint: "Postal Code",
-              controller: _postcodeController,
-            ),
-          ],
-        ),
+        ],
       ),
       bottomNavigationBar: Padding(
         padding: EdgeInsets.all(screenWidth * 0.04),
@@ -118,17 +155,19 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
               borderRadius: BorderRadius.circular(screenWidth * 0.04),
             ),
           ),
-          onPressed: () async{
-            final combinedAddress =
-                "${_addressController.text}, "
-                "${_cityController.text}, "
-                "${_postcodeController.text}, "
-                "${_countryController.text}";
+          onPressed: _isFetchingLocation
+              ? null
+              : () async {
+                  final combinedAddress =
+                      "${_addressController.text}, "
+                      "${_cityController.text}, "
+                      "${_postcodeController.text}, "
+                      "${_countryController.text}";
 
-            await SharedPref.saveShippingAddress(combinedAddress);
+                  await SharedPref.saveShippingAddress(combinedAddress);
 
-            Navigator.pop(context, combinedAddress);
-          },
+                  Navigator.pop(context, combinedAddress);
+                },
           child: Text(
             "Save Changes",
             style: TextStyle(color: MyColors.whiteColor, fontSize: 16),

@@ -1,4 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import '../api_urls/api_urls.dart';
 import '../model_class/product_attribute_model.dart';
 import '../model_class/product_model.dart';
 import '../screens/product_section/product_api.dart';
@@ -53,6 +57,35 @@ class ProductProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> fetchSingleProduct(String id) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final response = await http.get(
+        Uri.parse("${ApiUrl.viewProducts}?id=$id"),
+      );
+
+      if (response.statusCode == 200) {
+        final List data = jsonDecode(response.body);
+
+        if (data.isNotEmpty) {
+          final product = ProductModel.fromJson(data.first);
+
+          // Remove old if exists
+          allProducts.removeWhere((p) => p.id == id);
+
+          // Add fresh product
+          allProducts.add(product);
+        }
+      }
+    } catch (e) {
+      _error = e.toString();
+    }
+
+    _isLoading = false;
+    notifyListeners();
+  }
 
 
 }

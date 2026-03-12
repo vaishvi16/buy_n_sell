@@ -43,7 +43,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       );
       final cartProvider = Provider.of<CartProvider>(context, listen: false);
 
-      await productProvider.fetchProducts();
+      await productProvider.fetchSingleProduct(widget.id!);
 
       if (widget.id != null) {
         await productProvider.fetchProductAttributes(widget.id!);

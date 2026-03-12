@@ -104,9 +104,14 @@ class AuthProvider extends ChangeNotifier {
     _userEmail = user['mail'];
     _userName = user['name'];
 
+    String userId = user['id'].toString();
+
     await SharedPref.saveLoginStatus(true);
     await SharedPref.saveUserEmail(_userEmail!);
     await SharedPref.saveUserName(_userName!);
+    await SharedPref.saveUserId(userId);
+
+    print("Saved User ID: $userId");
   }
 
   // Social Login (Google / Facebook / Instagram)

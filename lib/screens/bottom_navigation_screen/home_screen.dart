@@ -52,79 +52,91 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         },
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 3.0),
-              child: Card(
-                shape: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(12)),
-                  borderSide: BorderSide(color: MyColors.greyColor),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.all(Radius.circular(12)),
-                  child: Image.network(
-                    "https://thumbs.dreamstime.com/b/winter-sale-concept-horizontal-banner-vector-illustration-abstract-creative-discount-layout-special-offer-graphic-design-poster-104935868.jpg",
-                    width: screenWidth,
-                    // height: screenHeight * 0.25,
-                  ),
-                ),
-              ),
-            ),
-            AuctionHomeSection(),
-            CategorySection(),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8.0),
-              child: Row(
+      body: Consumer2<CategoryProvider, AuctionProvider>(
+          builder: (context, categoryProvider, auctionProvider, _){
+            final isLoading = categoryProvider.isLoading ||
+                auctionProvider.isLoading;
+
+            if (isLoading) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+            return SingleChildScrollView(
+              child: Column(
                 children: [
-                  Expanded(
-                    child: Text(
-                      "Top Products",
-                      style: TextStyle(
-                        color: MyColors.blackColor,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 3.0),
+                    child: Card(
+                      shape: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                        borderSide: BorderSide(color: MyColors.greyColor),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                        child: Image.network(
+                          "https://thumbs.dreamstime.com/b/winter-sale-concept-horizontal-banner-vector-illustration-abstract-creative-discount-layout-special-offer-graphic-design-poster-104935868.jpg",
+                          width: screenWidth,
+                          // height: screenHeight * 0.25,
+                        ),
                       ),
                     ),
                   ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AllProductAsCategory(),
-                      ),
-                    );
-                    },
+                  AuctionHomeSection(),
+                  CategorySection(),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 12.0),
                     child: Row(
-                      spacing: 10,
                       children: [
-                        Text(
-                          "See All",
-                          style: TextStyle(
-                            color: MyColors.blackDarkColor,
-                            fontSize: 15,
+                        Expanded(
+                          child: Text(
+                            "Top Products",
+                            style: TextStyle(
+                              color: MyColors.blackColor,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
-                        CircleAvatar(
-                          radius: 13,
-                          backgroundColor: MyColors.primaryColor,
-                          child: Icon(
-                            Icons.arrow_forward_ios_outlined,
-                            size: 16,
-                            color: MyColors.whiteLightColor,
+                        TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AllProductAsCategory(),
+                              ),
+                            );
+                          },
+                          child: Row(
+                            spacing: 10,
+                            children: [
+                              Text(
+                                "See All",
+                                style: TextStyle(
+                                  color: MyColors.blackDarkColor,
+                                  fontSize: 15,
+                                ),
+                              ),
+                              CircleAvatar(
+                                radius: 13,
+                                backgroundColor: MyColors.primaryColor,
+                                child: Icon(
+                                  Icons.arrow_forward_ios_outlined,
+                                  size: 16,
+                                  color: MyColors.whiteLightColor,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
                   ),
+                  CategorySearches(),
                 ],
               ),
-            ),
-            CategorySearches(),
-          ],
-        ),
+            );
+          }
       ),
     );
   }

@@ -13,9 +13,9 @@ class CategorySection extends StatelessWidget {
 
     return Consumer<CategoryProvider>(
       builder: (context, provider, child) {
-        if (provider.isLoading) {
+        /*if (provider.isLoading) {
           return const Center(child: CircularProgressIndicator());
-        }
+        }*/
 
         if (provider.error != null) {
           return Center(child: Text(provider.error!));
@@ -28,7 +28,7 @@ class CategorySection extends StatelessWidget {
         return Column(
           children: [
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8.0),
+              padding: EdgeInsets.symmetric(horizontal: 12.0),
               child: Row(
                 children: [
                   Expanded(

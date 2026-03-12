@@ -29,6 +29,7 @@ class AuctionProductCard extends StatelessWidget {
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min, //  fit height
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.vertical(

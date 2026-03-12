@@ -82,13 +82,18 @@ class SellProductProvider extends ChangeNotifier {
     notifyListeners();
 
     String? userId = await SharedPref.getUserId();
+    print("USER ID FROM SHARED PREF: $userId");
 
     var request = http.MultipartRequest(
       'POST',
       Uri.parse(ApiUrl.insertProducts),
     );
 
-    request.fields['user_id'] = userId ?? "";
+    if (userId == null || userId.isEmpty) {
+      return "User not logged in properly";
+    }
+
+    request.fields['user_id'] = userId;
     request.fields['cat_id'] = selectedCategoryId!;
     request.fields['name'] = name;
     request.fields['description'] = description;

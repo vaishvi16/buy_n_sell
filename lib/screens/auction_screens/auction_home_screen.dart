@@ -17,9 +17,9 @@ class AuctionHomeSection extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.03),
       child: Consumer<AuctionProvider>(
         builder: (context, provider, _) {
-          if (provider.isLoading) {
+          /*if (provider.isLoading) {
             return  Center(child: CircularProgressIndicator());
-          }
+          }*/
 
           // Show both live + upcoming
           final homeAuctions = [
@@ -64,6 +64,7 @@ class AuctionHomeSection extends StatelessWidget {
               GridView.builder(
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
+                padding: EdgeInsets.zero,
                 itemCount: homeAuctions.length >= 4 ? 4 : homeAuctions.length,
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,

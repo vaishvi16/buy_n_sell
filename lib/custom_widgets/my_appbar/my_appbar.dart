@@ -43,8 +43,9 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
             Expanded(
               child: Padding(
                 padding: EdgeInsets.only(
-                  right: screenWidth * 0.02,
-                  top: screenHeight * 0.01,
+                  right: screenWidth * 0.01,
+                  top: screenHeight * 0.02,
+                  bottom: screenHeight * 0.02,
                 ),
                 child: TextField(
                   onSubmitted: onSubmitted,

@@ -40,6 +40,10 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
             return Center(child: Text(provider.errorMessage!));
           }
 
+          if (provider.orders.isEmpty) {
+            return Center(child: Text("No orders found!!"));
+          }
+
           return ListView.builder(
             padding: EdgeInsets.all(screenWidth * 0.03),
             itemCount: provider.orders.length,
