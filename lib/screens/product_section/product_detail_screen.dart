@@ -88,7 +88,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 .toList();
 
             if (product.isEmpty) {
-              return const Center(child: CircularProgressIndicator());
+              return Center(child: CircularProgressIndicator());
             }
 
             final ProductModel selectedProduct = product.first;
