@@ -33,7 +33,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
       body: Consumer<OrderHistoryProvider>(
         builder: (context, provider, _) {
           if (provider.isLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(child: CircularProgressIndicator());
           }
 
           if (provider.errorMessage != null) {
