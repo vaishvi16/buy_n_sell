@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 import '../../custom_widgets/custom_fields/checkout_card.dart';
 import '../../custom_widgets/custom_fields/checkout_item_card.dart';
@@ -27,6 +28,90 @@ class PaymentScreen extends StatefulWidget {
 }
 
 class _PaymentScreenState extends State<PaymentScreen> {
+  late Razorpay _razorpay;
+
+  void _handlePaymentSuccess(PaymentSuccessResponse response) async {
+    final cartProvider = context.read<CartProvider>();
+    final productProvider = context.read<ProductProvider>();
+    final checkout = context.read<CheckoutProvider>();
+
+    double total = checkout.shippingPrice;
+
+    for (final entry in cartProvider.cartItems.entries) {
+      final product = productProvider.allProducts.firstWhere(
+            (p) => p.id == entry.key,
+        orElse: () => ProductModel(),
+      );
+
+      final price = double.tryParse(product.price ?? '0') ?? 0;
+      total += price * entry.value;
+    }
+
+    final userId = await SharedPref.getUserId();
+    if (userId == null) return;
+
+    final productIds = cartProvider.cartItems.keys.join(',');
+
+    final orderModel = checkout.buildOrder(
+      userId: userId,
+      productIds: productIds,
+      quantities: cartProvider.cartItems,
+      totalAmount: total,
+    );
+
+    final responseOrder =
+    await context.read<OrderProvider>().placeOrder(orderModel);
+
+    if (responseOrder.status == "success") {
+      await cartProvider.clearCart();
+      checkout.reset();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Payment & Order Successful")),
+      );
+
+      Navigator.pop(context);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Order failed after payment")),
+      );
+    }
+  }
+
+  void _handlePaymentError(PaymentFailureResponse response) {
+    if (response.code == Razorpay.PAYMENT_CANCELLED) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Payment cancelled")),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Payment failed")),
+      );
+    }
+  }
+
+  void _handleExternalWallet(ExternalWalletResponse response) {
+    debugPrint("Wallet: ${response.walletName}");
+  }
+
+  void _startPayment(double total) {
+    var options = {
+      'key': 'rzp_test_SUziWlLr87FlSj',
+      'amount': (total * 100).toInt(),
+      'name': 'Buy N Sell',
+      'description': 'Order Payment',
+      'prefill': {
+        'contact': context.read<CheckoutProvider>().phone ?? '',
+        'email': context.read<CheckoutProvider>().email ?? '',
+      },
+    };
+
+    try {
+      _razorpay.open(options);
+    } catch (e) {
+      debugPrint("Payment error: $e");
+    }
+  }
 
   @override
   void initState() {
@@ -34,6 +119,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
     super.initState();
     _loadSavedAddress();
     _loadContactInfo();
+
+    _razorpay = Razorpay();
+
+    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
+    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
+    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
   }
 
   @override
@@ -323,49 +414,39 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       return;
                     }
 
-                    final userId = await SharedPref.getUserId();
-                    if (userId == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Please login first.")),
-                      );
-                      return;
-                    }
+                    if (checkout.paymentMethod == "cod") {
+                      // COD → Direct order (no Razorpay)
 
-                    final productIds =
-                    cartProvider.cartItems.keys.join(',');
+                      final userId = await SharedPref.getUserId();
+                      if (userId == null) return;
 
-                    final orderModel = checkout.buildOrder(
-                      userId: userId,
-                      productIds: productIds,
-                      quantities: cartProvider.cartItems,
-                      totalAmount: total,
-                    );
+                      final productIds = cartProvider.cartItems.keys.join(',');
 
-                    final response = await context
-                        .read<OrderProvider>()
-                        .placeOrder(orderModel);
-
-                    if (response.status == "success") {
-
-                      // Clear Cart
-                      await context.read<CartProvider>().clearCart();
-
-                      // Reset Checkout
-                      context.read<CheckoutProvider>().reset();
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Order placed successfully")),
+                      final orderModel = checkout.buildOrder(
+                        userId: userId,
+                        productIds: productIds,
+                        quantities: cartProvider.cartItems,
+                        totalAmount: total,
                       );
 
-                      // Go back to Cart screen
-                      Navigator.pop(context);
+                      final response = await context
+                          .read<OrderProvider>()
+                          .placeOrder(orderModel);
+
+                      if (response.status == "success") {
+                        await cartProvider.clearCart();
+                        checkout.reset();
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Order placed (COD)")),
+                        );
+
+                        Navigator.pop(context);
+                      }
 
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(response.message ?? "Order failed"),
-                        ),
-                      );
+                      // ONLINE PAYMENT → Razorpay
+                      _startPayment(total);
                     }
                   },
 
@@ -396,5 +477,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
     if (mounted) {
       context.read<CheckoutProvider>().setContact(email: email, phone: phone);
     }
+  }
+
+  @override
+  void dispose() {
+    _razorpay.clear();
+    super.dispose();
   }
 }
