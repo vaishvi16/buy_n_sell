@@ -8,7 +8,6 @@ import 'package:provider/provider.dart';
 
 import '../../providers/category_provider.dart';
 import '../auction_screens/auction_home_screen.dart';
-import '../category_section/all_category_section.dart';
 import '../category_section/category_section.dart';
 import '../product_section/all_product_as_category.dart';
 import '../search_screen/search_screen.dart';
@@ -53,16 +52,16 @@ class _HomeScreenState extends State<HomeScreen> {
         },
       ),
       body: Consumer2<CategoryProvider, AuctionProvider>(
-          builder: (context, categoryProvider, auctionProvider, _){
-            final isLoading = categoryProvider.isLoading ||
-                auctionProvider.isLoading;
+        builder: (context, categoryProvider, auctionProvider, _) {
+          final isLoading =
+              categoryProvider.isLoading || auctionProvider.isLoading;
 
-            if (isLoading) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
-            return SingleChildScrollView(
+          if (isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          return RefreshIndicator(
+            onRefresh: _onRefresh,
+            child: SingleChildScrollView(
               child: Column(
                 children: [
                   Padding(
@@ -135,9 +134,21 @@ class _HomeScreenState extends State<HomeScreen> {
                   CategorySearches(),
                 ],
               ),
-            );
-          }
+            ),
+          );
+        },
       ),
     );
+  }
+
+  Future<void> _onRefresh() async {
+    try {
+      await Future.wait([
+        Provider.of<CategoryProvider>(context, listen: false).fetchCategories(),
+        Provider.of<AuctionProvider>(context, listen: false).fetchAuctions(),
+      ]);
+    } catch (e) {
+      debugPrint("Refresh error: $e");
+    }
   }
 }

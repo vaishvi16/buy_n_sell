@@ -34,9 +34,11 @@ class AllCategorySection extends StatelessWidget {
           body: Column(
             children: [
               Expanded(
-                child: CustomCategoryGridview(
-                  categories: provider.categories,
-                  itemCount: provider.categories.length,
+                child: SingleChildScrollView(
+                  child: CustomCategoryGridview(
+                    categories: provider.categories,
+                    itemCount: provider.categories.length,
+                  ),
                 ),
               ),
             ],

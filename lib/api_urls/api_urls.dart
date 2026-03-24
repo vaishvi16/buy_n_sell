@@ -1,7 +1,7 @@
 class ApiUrl{
 
-  static const String baseUrl = "https://prakrutitech.xyz/vaishvi/";
-  static const String baseTestUrl = "http://192.168.29.140/5_miles/";
+  static const String baseTestUrl = "https://prakrutitech.xyz/vaishvi/";
+  //static const String baseTestUrl = "http://192.168.29.140/5_miles/";
   //static const String baseTestUrl = "http://192.168.29.141/5_miles/";
 
   // Auth Url

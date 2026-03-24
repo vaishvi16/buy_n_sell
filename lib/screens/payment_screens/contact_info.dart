@@ -53,6 +53,7 @@ class _ContactInfoScreenState extends State<ContactInfoScreen> {
               label: "Phone Number",
               hint: "phone number",
               controller: _phoneController,
+              maxLength: 10,
               textInputType: TextInputType.number,
             ),
             CheckoutTextField(

@@ -5,13 +5,15 @@ class CheckoutTextField extends StatelessWidget {
   final String hint;
   final TextEditingController? controller;
   final TextInputType? textInputType;
+  final int? maxLength;
 
   const CheckoutTextField({
     super.key,
     required this.label,
     required this.hint,
     this.controller,
-    this.textInputType
+    this.textInputType,
+    this.maxLength
   });
 
   @override
@@ -26,6 +28,7 @@ class CheckoutTextField extends StatelessWidget {
           TextField(
             controller: controller,
             keyboardType: textInputType,
+            maxLength: maxLength,
             decoration: InputDecoration(
               hintText: hint,
               border: OutlineInputBorder(

@@ -68,9 +68,11 @@ class CustomProductGridview extends StatelessWidget {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(left: 15.0, top: 8),
+                  padding: const EdgeInsets.only(left: 15.0, top: 8,right: 15),
                   child: Text(
                     product.name ?? "",
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: screenWidth * 0.04,
