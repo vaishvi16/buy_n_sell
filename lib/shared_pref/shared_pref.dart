@@ -8,6 +8,8 @@ class SharedPref {
   static const String _shippingAddressKey = "shippingAddress";
   static const String _phoneNumberKey = "phoneNumber";
   static const String _userIdKey = "userId";
+  static const String _themeKey = "themeMode";
+  static const String _languageKey = "language";
 
 
   // Save login status
@@ -84,5 +86,28 @@ class SharedPref {
   static Future<String?> getUserId() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_userIdKey);
+  }
+  // Save Theme
+  static Future<void> saveTheme(bool isDark) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_themeKey, isDark);
+  }
+
+  //Get Theme
+  static Future<bool> getTheme() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_themeKey) ?? false;
+  }
+
+ // Save Language
+  static Future<void> saveLanguage(String languageCode) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_languageKey, languageCode);
+  }
+
+  // Get Language
+  static Future<String> getLanguage() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_languageKey) ?? "en";
   }
 }

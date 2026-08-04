@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 
@@ -61,11 +62,7 @@ class AuthProvider extends ChangeNotifier {
     try {
       var response = await http.post(
         Uri.parse(ApiUrl.login),
-        body: {
-          "mail": email,
-          "password": password,
-          "auth_provider": "manual",
-        },
+        body: {"mail": email, "password": password, "auth_provider": "manual"},
       );
 
       final jsonData = jsonDecode(response.body);
@@ -179,7 +176,46 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> facebookLogin() async {
-    print("Facebook login clicked");
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await FacebookAuth.instance.logOut();
+
+      final LoginResult result = await FacebookAuth.instance.login(
+        permissions: ['email', 'public_profile'],
+      );
+
+      if (result.status == LoginStatus.success) {
+        final userData = await FacebookAuth.instance.getUserData(
+          fields: "name,email",
+        );
+
+        if (!userData.containsKey('email') || userData['email'] == null) {
+          _errorMessage =
+              "Your Facebook account doesn't provide an email address.";
+          _isLoggedIn = false;
+          _isLoading = false;
+          notifyListeners();
+          return;
+        }
+
+        await loginSocial(
+          email: userData['email'],
+          name: userData['name'],
+          authProvider: "facebook",
+        );
+      } else {
+        _errorMessage = "Status: ${result.status}\n${result.message}";
+      }
+    } catch (e, s) {
+      print("EXCEPTION:");
+      _errorMessage = e.toString();
+    }
+
+    _isLoading = false;
+    notifyListeners();
   }
 
   Future<void> instagramLogin() async {
@@ -217,11 +253,9 @@ class AuthProvider extends ChangeNotifier {
       } else {
         print("USer sign up failed! ${smodel.status} and ${smodel.message}");
         _signupMessage = "Signup failed";
-
       }
     } catch (e) {
       _signupMessage = "Something went wrong. Try again.";
-
     }
     _isSigningUp = false;
     notifyListeners();

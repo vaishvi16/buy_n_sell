@@ -1,6 +1,8 @@
 import 'package:buy_n_sell/custom_widgets/my_colors/my_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../providers/product_provider.dart';
 import '../../screens/product_section/all_product_as_category.dart';
 
 class CustomCategoryGridview extends StatelessWidget {
@@ -102,12 +104,21 @@ class CustomCategoryGridview extends StatelessWidget {
                     Spacer(),
                     Padding(
                       padding: EdgeInsets.only(right: 10.0, top: 8),
-                      child: Text(
-                        "${category.images?.length ?? 0} Items",
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: screenWidth * 0.03,
-                        ),
+                      child: Consumer<ProductProvider>(
+                        builder: (context, productProvider, child) {
+
+                          int count = productProvider.allProducts
+                              .where((p) => p.catId == category.id.toString())
+                              .length;
+
+                          return Text(
+                            "$count Items",
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: screenWidth * 0.03,
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ],

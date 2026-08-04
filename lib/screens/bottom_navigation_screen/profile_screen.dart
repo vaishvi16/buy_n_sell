@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../custom_widgets/custom_fields/order_tabs.dart';
+import '../../custom_widgets/custom_fields/user_avatar.dart';
 import '../../custom_widgets/my_colors/my_colors.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
@@ -13,6 +14,7 @@ import '../login_signup_screen/login_screen.dart';
 import '../order_screens/order_history_screen.dart';
 import '../order_screens/review_product_screen.dart';
 import '../search_screen/category_searches.dart';
+import '../settings_screen/settings_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -43,25 +45,8 @@ class ProfileScreen extends StatelessWidget {
                       Expanded(
                         child: Row(
                           children: [
-                            Consumer<AuthProvider>(
-                              builder: (context, authProvider, _) {
-                                final name = authProvider.userName ?? "User";
-                                final firstLetter =
-                                name.isNotEmpty ? name[0].toUpperCase() : "U";
-
-                                return CircleAvatar(
-                                  radius: screenWidth * 0.055,
-                                  backgroundColor: MyColors.primaryColor,
-                                  child: Text(
-                                    firstLetter,
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: screenWidth * 0.055,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                );
-                              },
+                            UserAvatar(
+                              radius: screenWidth * 0.05,
                             ),
                             SizedBox(width: screenWidth * 0.025),
                             Consumer<AuthProvider>(
@@ -100,7 +85,9 @@ class ProfileScreen extends StatelessWidget {
                       IconButton(
                         icon: Icon(Icons.settings, size: screenWidth * 0.065),
                         onPressed: () {
-                          _showLogoutSheet(context);
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsScreen(),));
+
+                     //     _showLogoutSheet(context);
                         },
                       ),
                     ],

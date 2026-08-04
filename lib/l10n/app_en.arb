@@ -1,0 +1,24 @@
+{
+  "@@locale": "en",
+
+  "appName": "Buy N Sell",
+
+  "settings": "Settings",
+  "language": "Language",
+  "darkMode": "Dark Mode",
+
+  "english": "English",
+  "hindi": "Hindi",
+  "gujarati": "Gujarati",
+
+  "editProfile": "Edit Profile",
+  "orderHistory": "Order History",
+  "shippingDetails": "Shipping Details",
+  "allCoupons": "All Coupons",
+  "changePassword": "Change Password",
+  "logout": "Log Out",
+
+  "logoutConfirmation": "Are you sure you want to logout?",
+  "cancel": "Cancel",
+  "continueText": "Continue"
+}

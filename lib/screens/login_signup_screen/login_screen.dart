@@ -240,9 +240,34 @@ class _LoginScreenState extends State<LoginScreen> {
                                   "instagram",
                                 ),
                                 SizedBox(width: 15),
-                                socialIcon(
-                                  "assets/icons/facebook.png",
-                                  "facebook",
+                                GestureDetector(
+                                  onTap: () async {
+                                    final authProvider =
+                                    Provider.of<AuthProvider>(context, listen: false);
+
+                                    await authProvider.facebookLogin();
+
+                                    if (authProvider.isLoggedIn) {
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => DashboardScreen(),
+                                        ),
+                                      );
+                                    } else if (authProvider.errorMessage != null) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(authProvider.errorMessage!),
+                                        ),
+                                      );
+
+                                      authProvider.clearError();
+                                    }
+                                  },
+                                  child: socialIcon(
+                                    "assets/icons/facebook.png",
+                                    "facebook",
+                                  ),
                                 ),
                                 SizedBox(width: 15),
                                 GestureDetector(
