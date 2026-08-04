@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 
@@ -175,7 +174,7 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> facebookLogin() async {
+  /*Future<void> facebookLogin() async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -216,7 +215,7 @@ class AuthProvider extends ChangeNotifier {
 
     _isLoading = false;
     notifyListeners();
-  }
+  }*/
 
   Future<void> instagramLogin() async {
     print("Instagram login clicked");

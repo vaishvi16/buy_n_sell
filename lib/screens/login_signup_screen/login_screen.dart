@@ -245,7 +245,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                     final authProvider =
                                     Provider.of<AuthProvider>(context, listen: false);
 
-                                    await authProvider.facebookLogin();
+                                 //   await authProvider.facebookLogin();
+                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Login with Facebook is currently unavailable!")));
 
                                     if (authProvider.isLoggedIn) {
                                       Navigator.pushReplacement(
